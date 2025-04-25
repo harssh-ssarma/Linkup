@@ -1,4 +1,4 @@
-# 📱 Linkup - WhatsApp Like Chat App
+# 📱 Linkup - Real Time Chat Plateform
 
 A real-time chat application inspired by WhatsApp – built with the MERN Stack and Socket.IO. Seamless messaging, authentication, group chats, and more.
 
