@@ -1,33 +1,36 @@
-import {Server} from 'socket.io';
+import { Server } from 'socket.io';
 import http from 'http';
 import express from 'express';
 
 const app = express();
-
 const server = http.createServer(app);
 
-const io = new Server(server,{
-    cors:{
-        origin: ['http://localhost:5173'],
-        methods: ["GET", "POST"]
-    }
-});
+const userSocketmap = {}; // { userId: socketId }
 
-export const getReceiverSocketId = (receiverId)=>{
+export const getReceiverSocketId = (receiverId) => {
     return userSocketmap[receiverId];
 };
 
-const userSocketmap = {};  // {userId, socketId}
+const io = new Server(server, {
+    cors: {
+        origin: ['https://linkup-u40u.onrender.com'], // use http unless you’ve set up https locally
+        methods: ['GET', 'POST']
+    }
+});
+
 io.on('connection', (socket) => {
     const userId = socket.handshake.query.userId;
 
-    if(userId !== 'undefined') userSocketmap[userId] = socket.id;
-    io.emit("getOnlineUsers",Object.keys(userSocketmap))
+    if (userId && userId !== 'undefined') {
+        userSocketmap[userId] = socket.id;
+    }
+
+    io.emit('getOnlineUsers', Object.keys(userSocketmap));
 
     socket.on('disconnect', () => {
-        delete userSocketmap[userId],
-        io.emit("getOnlineUsers",Object.keys(userSocketmap))
+        delete userSocketmap[userId];
+        io.emit('getOnlineUsers', Object.keys(userSocketmap));
     });
-});    
+});
 
-export {app, io, server};
+export { app, io, server };

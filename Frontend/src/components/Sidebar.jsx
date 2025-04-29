@@ -187,7 +187,7 @@ function Sidebar({onSelectUser}) {
                 </div>
 
                 <div className='mt-auto px-1 py-1 flex'>
-                    <button onClick={handleSearchBack} className=' rounded-full px-2 py-1 self-center'>
+                    <button onClick={handleSearchBack} className=' rounded-full px-2 text-white py-1 self-center'>
                         <FaArrowCircleLeft size={25} />
                     </button>
 
@@ -201,7 +201,6 @@ function Sidebar({onSelectUser}) {
                         {chatUser.length === 0 ? (
                             <>
                                 <div className='font-bold items-center flex flex-col text-xl text-yellow-500'>
-                                    <h1>Why are you Alone!!🤔</h1>
                                     <h1>Search username to chat</h1>
                                 </div>
                             </>
@@ -226,7 +225,7 @@ function Sidebar({onSelectUser}) {
                                                 <div>
                                                     {newMessageUsers.receiverId === authUser._id && newMessageUsers.senderId === user._id ?
                                                     <div className='rounded-full bg-green-600 text-sm text-white px-[4px]'>+1</div>:<></>
-                    }
+                                                    }
                                                 </div>
                                             
 
@@ -243,10 +242,10 @@ function Sidebar({onSelectUser}) {
                     </div>
                 </div>
                 <div className='mt-auto px-1 py-1 flex'>
-                    <button onClick={handleLogout} className='hover:bg-red-600  w-10 cursor-pointer hover:text-white rounded-lg'>
+                    <button onClick={handleLogout} className='hover:bg-red-600  w-10 cursor-pointer text-white rounded-lg'>
                         <BiLogOut size={25} />
                     </button>
-                    <p className='text-sm py-1'>Logout</p>
+                    <p className='text-sm py-1 text-white'>Logout</p>
                 </div>
             </>
         )}

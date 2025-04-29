@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import UserSearchRoute from './routes/userSearchRoute.js';
 import {server, app} from './Socket/socket.js';
 import path from 'path';
+import cors from 'cors';
 
 const __dirname = path.resolve();
 
@@ -14,6 +15,10 @@ dotenv.config();
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({
+    origin: 'https://linkup-u40u.onrender.com',
+    credentials: true
+}));
 
 
 
