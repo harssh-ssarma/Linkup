@@ -29,7 +29,7 @@ A real-time chat application inspired by WhatsApp – built with the MERN Stack 
 
 1. Clone the repository and move into the project:
 
-   `git clone https://github.com/yourusername/linkup-chat-app.git && cd linkup-chat-app`
+   `git clone https://github.com/harssh-ssarma/linkup.git && cd linkup`
 
 2. Set up the backend:
 
@@ -93,6 +93,6 @@ See the [LICENSE](LICENSE) file for details.
 
 **Harsh Sharma**  
 Aspiring Full Stack Developer
-[LinkedIn](https://www.linkedin.com/in/harsh41sharma/) • [GitHub](https://github.com/harsh41sharma)
+[LinkedIn](https://www.linkedin.com/in/harsshssarma/) • [GitHub](https://github.com/harssh-ssarma)
 
 
