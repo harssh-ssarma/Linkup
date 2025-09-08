@@ -54,10 +54,14 @@ def send_otp(request):
 def verify_otp(request):
     """Verify OTP"""
     try:
+        print(f"Received verify_otp request data: {request.data}")
         phone_number = request.data.get('phone_number')
         otp_code = request.data.get('otp_code')
         
+        print(f"Extracted - phone: {phone_number}, otp: {otp_code}")
+        
         if not phone_number or not otp_code:
+            print(f"Missing data - phone: {phone_number}, otp: {otp_code}")
             return JsonResponse({
                 'error': 'Phone number and OTP code are required'
             }, status=400)
