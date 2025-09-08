@@ -19,6 +19,7 @@ media/
 static/
 .coverage
 .venv/
+.env
 
 # Node.js/Next.js
 node_modules/
