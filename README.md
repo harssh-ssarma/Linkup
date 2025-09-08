@@ -62,10 +62,14 @@ A production-ready, enterprise-scale messaging platform with advanced AI feature
 
 ### Backend Setup
 
+<<<<<<< HEAD
 ```bash
 # Clone repository
 git clone https://github.com/yourusername/linkup.git
 cd linkup/backend
+=======
+   `git clone https://github.com/harssh-ssarma/linkup.git && cd linkup`
+>>>>>>> 29e2e89141769d2d69774537381c2f8c5bf5989f
 
 # Create virtual environment
 python -m venv venv
@@ -324,4 +328,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+<<<<<<< HEAD
 **Built with ❤️ for the future of messaging**
+=======
+## 👨‍💻 Developed By
+
+**Harsh Sharma**  
+Aspiring Full Stack Developer
+[LinkedIn](https://www.linkedin.com/in/harsshssarma/) • [GitHub](https://github.com/harssh-ssarma)
+
+
+>>>>>>> 29e2e89141769d2d69774537381c2f8c5bf5989f
