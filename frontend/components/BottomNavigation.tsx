@@ -1,11 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { MessageCircle, Home, Plus, Search, User, Phone, Video } from 'lucide-react'
+import { MessageCircle, Home, Plus, Phone, Settings, User } from 'lucide-react'
 
 interface BottomNavigationProps {
-  activeTab: 'chats' | 'feed' | 'create' | 'discover' | 'profile'
-  onTabChange: (tab: 'chats' | 'feed' | 'create' | 'discover' | 'profile') => void
+  activeTab: 'chats' | 'feed' | 'create' | 'calls' | 'profile' | 'settings'
+  onTabChange: (tab: 'chats' | 'feed' | 'create' | 'calls' | 'profile' | 'settings') => void
 }
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
@@ -13,8 +13,9 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
     { id: 'chats', icon: MessageCircle, label: 'Chats', color: 'from-blue-500 to-cyan-500' },
     { id: 'feed', icon: Home, label: 'Feed', color: 'from-purple-500 to-pink-500' },
     { id: 'create', icon: Plus, label: 'Create', color: 'from-green-500 to-emerald-500' },
-    { id: 'discover', icon: Search, label: 'Discover', color: 'from-orange-500 to-red-500' },
-    { id: 'profile', icon: User, label: 'Profile', color: 'from-indigo-500 to-purple-500' },
+    { id: 'calls', icon: Phone, label: 'Calls', color: 'from-green-500 to-emerald-500' },
+    { id: 'profile', icon: User, label: 'Profile', color: 'from-orange-500 to-red-500' },
+    { id: 'settings', icon: Settings, label: 'Settings', color: 'from-indigo-500 to-purple-500' },
   ]
 
   return (
@@ -69,28 +70,20 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                   <span className="text-xs text-white font-bold">3</span>
                 </motion.div>
               )}
+
+              {/* Notification Badge for Calls */}
+              {tab.id === 'calls' && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"
+                >
+                  <span className="text-xs text-white font-bold">2</span>
+                </motion.div>
+              )}
             </motion.button>
           )
         })}
-      </div>
-      
-      {/* Quick Action Buttons */}
-      <div className="flex justify-center space-x-4 mt-2 pt-2 border-t border-white/10">
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-500/20 rounded-full text-green-400 hover:bg-green-500/30 transition-colors"
-        >
-          <Phone size={16} />
-          <span className="text-sm">Call</span>
-        </motion.button>
-        
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 rounded-full text-blue-400 hover:bg-blue-500/30 transition-colors"
-        >
-          <Video size={16} />
-          <span className="text-sm">Video</span>
-        </motion.button>
       </div>
     </div>
   )

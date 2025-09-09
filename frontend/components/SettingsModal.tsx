@@ -19,7 +19,8 @@ import {
   Trash2,
   LogOut,
   ChevronRight,
-  Check
+  Check,
+  Settings
 } from 'lucide-react'
 
 interface SettingsModalProps {
@@ -66,7 +67,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       title: 'Account',
       icon: User,
       items: [
-        { id: 'profile', title: 'Edit Profile', subtitle: 'Name, bio, avatar' },
         { id: 'phone', title: 'Phone Number', subtitle: '+1 (555) 123-4567' },
         { id: 'username', title: 'Username', subtitle: '@johndoe' },
       ]
@@ -113,6 +113,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         { id: 'language', title: 'Language', subtitle: 'English' },
         { id: 'autoDownload', title: 'Auto-Download Media', subtitle: 'Wi-Fi only' },
       ]
+    },
+    {
+      id: 'signout',
+      title: 'Sign Out',
+      icon: LogOut,
+      items: []
     }
   ]
 
@@ -201,16 +207,29 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <motion.button
                       key={section.id}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => setActiveSection(section.id)}
+                      onClick={() => {
+                        if (section.id === 'signout') {
+                          // Handle sign out
+                          if (confirm('Are you sure you want to sign out?')) {
+                            // Add your sign out logic here
+                            console.log('Signing out...')
+                            onClose()
+                          }
+                        } else {
+                          setActiveSection(section.id)
+                        }
+                      }}
                       className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-colors ${
                         activeSection === section.id
                           ? 'bg-blue-500/20 border border-blue-500/30'
+                          : section.id === 'signout'
+                          ? 'hover:bg-red-500/10 text-red-400'
                           : 'hover:bg-white/5'
                       }`}
                     >
-                      <Icon size={20} className="text-white/80" />
-                      <span className="text-white font-medium">{section.title}</span>
-                      <ChevronRight size={16} className="text-white/40 ml-auto" />
+                      <Icon size={20} className={section.id === 'signout' ? 'text-red-400' : 'text-white/80'} />
+                      <span className={`font-medium ${section.id === 'signout' ? 'text-red-400' : 'text-white'}`}>{section.title}</span>
+                      {section.id !== 'signout' && <ChevronRight size={16} className="text-white/40 ml-auto" />}
                     </motion.button>
                   )
                 })}
@@ -226,13 +245,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   >
                     <Trash2 size={20} />
                     <span>Delete Account</span>
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full flex items-center space-x-3 p-3 rounded-xl text-orange-400 hover:bg-orange-500/10 transition-colors"
-                  >
-                    <LogOut size={20} />
-                    <span>Sign Out</span>
                   </motion.button>
                 </div>
               </div>

@@ -19,7 +19,10 @@ import {
   Globe,
   Lock,
   Eye,
-  Phone
+  Phone,
+  User,
+  Heart,
+  Clock
 } from 'lucide-react'
 import Image from 'next/image'
 import SettingsModal from './SettingsModal'
@@ -43,7 +46,7 @@ interface UserProfile {
 }
 
 export default function ProfileSection() {
-  const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'tagged'>('posts')
+  const [activeTab, setActiveTab] = useState<'profile' | 'posts' | 'stories'>('profile')
   const [showSettings, setShowSettings] = useState(false)
   const [showEditProfile, setShowEditProfile] = useState(false)
   
@@ -227,9 +230,9 @@ export default function ProfileSection() {
           {/* Content Tabs */}
           <div className="flex space-x-1 bg-white/5 rounded-lg p-1 mb-6">
             {[
+              { id: 'profile', label: 'Profile', icon: User },
               { id: 'posts', label: 'Posts', icon: Grid },
-              { id: 'saved', label: 'Saved', icon: Bookmark },
-              { id: 'tagged', label: 'Tagged', icon: Tag }
+              { id: 'stories', label: 'My Stories', icon: Clock }
             ].map((tab) => {
               const isActive = activeTab === tab.id
               const Icon = tab.icon
@@ -252,26 +255,137 @@ export default function ProfileSection() {
             })}
           </div>
 
-          {/* Content Grid */}
-          <div className="grid grid-cols-3 gap-1">
-            {Array.from({ length: 9 }).map((_, index) => (
+          {/* Content Area */}
+          {activeTab === 'profile' && (
+            <div className="space-y-6">
               <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="aspect-square bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg overflow-hidden cursor-pointer group"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-effect rounded-xl p-6"
               >
-                <Image
-                  src={`https://picsum.photos/300/300?random=${index + 10}`}
-                  alt={`Post ${index + 1}`}
-                  width={300}
-                  height={300}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
+                <h3 className="text-lg font-semibold text-white mb-4">Edit Profile</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      value={profile.name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">Username</label>
+                    <input
+                      type="text"
+                      value={profile.username}
+                      onChange={(e) => setProfile(prev => ({ ...prev, username: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">Bio</label>
+                    <textarea
+                      value={profile.bio}
+                      onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                      rows={4}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">Location</label>
+                    <input
+                      type="text"
+                      value={profile.location}
+                      onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">Website</label>
+                    <input
+                      type="url"
+                      value={profile.website}
+                      onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white font-semibold"
+                  >
+                    Save Changes
+                  </motion.button>
+                </div>
               </motion.div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {activeTab === 'posts' && (
+            <div className="grid grid-cols-3 gap-1">
+              {Array.from({ length: 9 }).map((_, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="aspect-square bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg overflow-hidden cursor-pointer group"
+                >
+                  <Image
+                    src={`https://picsum.photos/300/300?random=${index + 10}`}
+                    alt={`Post ${index + 1}`}
+                    width={300}
+                    height={300}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'stories' && (
+            <div className="space-y-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-effect rounded-xl p-6"
+              >
+                <h3 className="text-lg font-semibold text-white mb-4">My Saved Stories</h3>
+                <p className="text-white/60 text-center py-8">
+                  Stories you save will appear here for you to view later
+                </p>
+              </motion.div>
+              
+              {/* Saved Stories Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="aspect-[9/16] bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-xl overflow-hidden cursor-pointer group relative"
+                  >
+                    <Image
+                      src={`https://picsum.photos/180/320?random=${index + 20}`}
+                      alt={`Saved Story ${index + 1}`}
+                      width={180}
+                      height={320}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 right-3">
+                      <Heart size={16} className="text-red-400 fill-current" />
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <p className="text-white text-xs font-medium truncate">
+                        Saved Story {index + 1}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

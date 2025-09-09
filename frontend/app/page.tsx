@@ -6,14 +6,46 @@ import BottomNavigation from '@/components/BottomNavigation'
 import ChatSection from '@/components/ChatSection'
 import FeedSection from '@/components/FeedSection'
 import CreateSection from '@/components/CreateSection'
-import DiscoverSection from '@/components/DiscoverSection'
+import CallSection from '@/components/CallSection'
 import ProfileSection from '@/components/ProfileSection'
-import AuthModal from '@/components/AuthModal'
+import SettingsSection from '@/components/SettingsSection'
+import EmailAuthModal from '@/components/AuthModal'
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'chats' | 'feed' | 'create' | 'discover' | 'profile'>('chats')
+  const [activeTab, setActiveTab] = useState<'chats' | 'feed' | 'create' | 'calls' | 'profile' | 'settings'>('chats')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(true)
+
+  // Check for persistent login on mount
+  useEffect(() => {
+    const authToken = localStorage.getItem('auth_token')
+    const userData = localStorage.getItem('user_data')
+    
+    // Check URL parameters for email verification
+    const urlParams = new URLSearchParams(window.location.search)
+    const verified = urlParams.get('verified')
+    
+    if (verified === 'true' || (authToken && userData)) {
+      setIsAuthenticated(true)
+      setShowAuthModal(false)
+      
+      // Clean up URL if came from verification
+      if (verified) {
+        window.history.replaceState({}, document.title, window.location.pathname)
+        // Store auth data (in real app, this would come from the verification endpoint)
+        localStorage.setItem('auth_token', 'verified_token')
+        localStorage.setItem('user_data', JSON.stringify({ name: 'User', email: 'user@example.com', verified: true }))
+      }
+    }
+  }, [])
+
+  const handleAuthenticated = () => {
+    setIsAuthenticated(true)
+    setShowAuthModal(false)
+    // Set persistent cookie/localStorage - this would be handled by your auth API
+    localStorage.setItem('auth_token', 'sample_token')
+    localStorage.setItem('user_data', JSON.stringify({ name: 'User', email: 'user@example.com' }))
+  }
 
   const renderActiveSection = () => {
     switch (activeTab) {
@@ -23,10 +55,12 @@ export default function Home() {
         return <FeedSection />
       case 'create':
         return <CreateSection />
-      case 'discover':
-        return <DiscoverSection />
+      case 'calls':
+        return <CallSection />
       case 'profile':
         return <ProfileSection />
+      case 'settings':
+        return <SettingsSection />
       default:
         return <ChatSection />
     }
@@ -34,13 +68,10 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <AuthModal 
+      <EmailAuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)}
-        onAuthenticated={() => {
-          setIsAuthenticated(true)
-          setShowAuthModal(false)
-        }}
+        onAuthenticated={handleAuthenticated}
       />
     )
   }

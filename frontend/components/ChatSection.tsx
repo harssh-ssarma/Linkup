@@ -90,26 +90,6 @@ export default function ChatSection() {
             searchQuery={searchQuery}
           />
         </div>
-
-        {/* Quick Actions */}
-        <div className="p-4 border-t border-white/10">
-          <div className="grid grid-cols-2 gap-2">
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center justify-center space-x-2 py-3 bg-green-500/20 rounded-xl text-green-400 hover:bg-green-500/30 transition-colors"
-            >
-              <Phone size={18} />
-              <span className="text-sm font-medium">New Call</span>
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center justify-center space-x-2 py-3 bg-purple-500/20 rounded-xl text-purple-400 hover:bg-purple-500/30 transition-colors"
-            >
-              <Video size={18} />
-              <span className="text-sm font-medium">Video Call</span>
-            </motion.button>
-          </div>
-        </div>
       </div>
 
       {/* Main Chat Area */}

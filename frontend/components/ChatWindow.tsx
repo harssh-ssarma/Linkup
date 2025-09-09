@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Smile, Paperclip, Mic, Phone, Video, MoreVertical, Bot } from 'lucide-react'
+import { Send, Smile, Paperclip, Mic, MoreVertical, Bot } from 'lucide-react'
 import Image from 'next/image'
 import EmojiPicker from 'emoji-picker-react'
 
@@ -126,20 +126,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             className={`p-2 rounded-lg transition-colors ${showAIAssistant ? 'bg-blue-500/30 text-blue-300' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
           >
             <Bot size={20} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
-          >
-            <Phone size={20} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
-          >
-            <Video size={20} />
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.1 }}

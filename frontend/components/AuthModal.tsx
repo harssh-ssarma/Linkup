@@ -2,15 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Phone, Mail, Eye, EyeOff, ArrowRight, Shield, Smartphone, ChevronDown, Clock } from 'lucide-react'
-import { apiService } from '@/lib/api'
-
-interface Country {
-  code: string
-  name: string
-  flag: string
-  dialCode: string
-}
+import { Mail, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Clock, RefreshCw, User, Shield } from 'lucide-react'
+import { auth } from '@/lib/firebase'
+import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, ActionCodeSettings } from 'firebase/auth'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -19,42 +13,20 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, onAuthenticated }: AuthModalProps) {
-  const [step, setStep] = useState<'phone' | 'otp' | 'profile'>('phone')
-  const [selectedCountry, setSelectedCountry] = useState<Country>({
-    code: 'IN',
-    name: 'India',
-    flag: '🇮🇳',
-    dialCode: '+91'
-  })
-  const [showCountryPicker, setShowCountryPicker] = useState(false)
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [otp, setOtp] = useState(['', '', '', '', '', ''])
-  const [fullName, setFullName] = useState('')
+  const [step, setStep] = useState<'signin' | 'signup' | 'verification'>('signin')
   const [email, setEmail] = useState('')
+  const [fullName, setFullName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [otpTimer, setOtpTimer] = useState(0)
+  const [verificationTimer, setVerificationTimer] = useState(0)
   const [canResend, setCanResend] = useState(false)
   const [error, setError] = useState('')
 
-  const countries: Country[] = [
-    { code: 'IN', name: 'India', flag: '🇮🇳', dialCode: '+91' },
-    { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' }, 
-    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
-    { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
-    { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61' },
-    { code: 'DE', name: 'Germany', flag: '🇩🇪', dialCode: '+49' },
-    { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '+33' },
-    { code: 'JP', name: 'Japan', flag: '🇯🇵', dialCode: '+81' },
-    { code: 'BR', name: 'Brazil', flag: '🇧🇷', dialCode: '+55' },
-    { code: 'MX', name: 'Mexico', flag: '🇲🇽', dialCode: '+52' },
-  ]
-
-  // OTP Timer Effect
+  // Verification Timer Effect
   useEffect(() => {
     let interval: NodeJS.Timeout
-    if (otpTimer > 0) {
+    if (verificationTimer > 0) {
       interval = setInterval(() => {
-        setOtpTimer(prev => {
+        setVerificationTimer(prev => {
           if (prev <= 1) {
             setCanResend(true)
             return 0
@@ -64,135 +36,133 @@ export default function AuthModal({ isOpen, onClose, onAuthenticated }: AuthModa
       }, 1000)
     }
     return () => clearInterval(interval)
-  }, [otpTimer])
+  }, [verificationTimer])
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
-    
-    const fullPhoneNumber = selectedCountry.dialCode + phoneNumber
-    const response = await apiService.sendOTP(fullPhoneNumber, selectedCountry.code)
-    
-    if (response.error) {
-      setError(response.error)
-    } else {
-      setStep('otp')
-      setOtpTimer(30) // 30 seconds timer
-      setCanResend(false)
-    }
-    
-    setIsLoading(false)
-  }
-
-  const handleOtpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
-    
-    const otpCode = otp.join('')
-    if (otpCode.length !== 6) {
-      setError('Please enter complete OTP')
-      setIsLoading(false)
-      return
-    }
-
-    const fullPhoneNumber = selectedCountry.dialCode + phoneNumber
-    const response = await apiService.verifyOTP(fullPhoneNumber, otpCode)
-    
-    if (response.error) {
-      setError(response.error)
-      setOtp(['', '', '', '', '', '']) // Clear OTP on error
-    } else if (response.data) {
-      if ((response.data as any).is_new_user) {
-        setStep('profile')
-      } else {
-        onAuthenticated()
+  // Check if user came from email link
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isSignInWithEmailLink(auth, window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn')
+      if (!email) {
+        email = window.prompt('Please provide your email for confirmation')
+      }
+      if (email) {
+        signInWithEmailLink(auth, email, window.location.href)
+          .then((result) => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.removeItem('emailForSignIn')
+            }
+            onAuthenticated()
+            onClose()
+          })
+          .catch((error) => {
+            console.error('Error signing in with email link:', error)
+            setError('Failed to verify email. Please try again.')
+          })
       }
     }
-    
-    setIsLoading(false)
-  }
+  }, [onAuthenticated, onClose])
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
     
-    const fullPhoneNumber = selectedCountry.dialCode + phoneNumber
-    const response = await apiService.completeProfile(fullPhoneNumber, fullName, email)
-    
-    if (response.error) {
-      setError(response.error)
-    } else {
-      onAuthenticated()
+    try {
+      // Configure action code settings for email link
+      const actionCodeSettings: ActionCodeSettings = {
+        url: typeof window !== 'undefined' ? window.location.origin + '/?verified=true' : 'http://localhost:3000/?verified=true',
+        handleCodeInApp: true,
+      }
+      
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('emailForSignIn', email)
+      }
+      setStep('verification')
+      setVerificationTimer(60)
+      setCanResend(false)
+    } catch (error: any) {
+      console.error('Error sending email link:', error)
+      setError(error.message || 'Failed to send verification email. Please try again.')
     }
     
     setIsLoading(false)
   }
 
-  const handleResendOtp = async () => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
+    
+    try {
+      // Configure action code settings for email link
+      const actionCodeSettings: ActionCodeSettings = {
+        url: typeof window !== 'undefined' ? window.location.origin + '/?verified=true' : 'http://localhost:3000/?verified=true',
+        handleCodeInApp: true,
+      }
+      
+      // Store full name in localStorage to use after email verification
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('userDisplayName', fullName)
+        window.localStorage.setItem('emailForSignIn', email)
+      }
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      setStep('verification')
+      setVerificationTimer(60)
+      setCanResend(false)
+    } catch (error: any) {
+      console.error('Error sending email link:', error)
+      setError(error.message || 'Failed to create account. Please try again.')
+    }
+    
+    setIsLoading(false)
+  }
+
+  const handleResendEmail = async () => {
     if (!canResend) return
     
     setIsLoading(true)
-    const fullPhoneNumber = selectedCountry.dialCode + phoneNumber
-    const response = await apiService.sendOTP(fullPhoneNumber, selectedCountry.code)
+    setError('')
     
-    if (response.error) {
-      setError('Failed to resend OTP')
-    } else {
-      setOtpTimer(30)
+    try {
+      const actionCodeSettings: ActionCodeSettings = {
+        url: typeof window !== 'undefined' ? window.location.origin + '/?verified=true' : 'http://localhost:3000/?verified=true',
+        handleCodeInApp: true,
+      }
+      
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      setVerificationTimer(60)
       setCanResend(false)
-      setOtp(['', '', '', '', '', ''])
+    } catch (error: any) {
+      console.error('Error resending email:', error)
+      setError(error.message || 'Failed to resend email. Please try again.')
     }
     
     setIsLoading(false)
-  }
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return
-    
-    const newOtp = [...otp]
-    newOtp[index] = value
-    setOtp(newOtp)
-    
-    // Auto-focus next input
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`)
-      nextInput?.focus()
-    }
-  }
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`)
-      prevInput?.focus()
-    }
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="w-full max-w-md mx-4"
+        className="w-full max-w-md max-h-[95vh] overflow-y-auto"
       >
-        <div className="glass-effect rounded-2xl p-8 border border-white/20">
+        <div className="glass-effect rounded-2xl p-6 md:p-8 border border-white/20 my-4">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 md:mb-8">
             <motion.div
-              initial={{ scale: 0 }}
+              initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="w-20 h-20 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center"
+              className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-blue-500/20 to-purple-600/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20"
             >
-              <Smartphone className="text-white" size={32} />
+              <Mail className="w-8 h-8 md:w-10 md:h-10 text-blue-400" />
             </motion.div>
-            <h1 className="text-2xl font-bold text-white mb-2">Welcome to Linkup</h1>
-            <p className="text-white/60">Connect, Share, and Chat with AI-powered features</p>
+            <h1 className="text-xl md:text-2xl font-bold text-white mb-2">Welcome to LinkUp</h1>
+            <p className="text-white/60 text-sm md:text-base">Connect, Share, and Chat with AI-powered features</p>
           </div>
 
           {/* Error Message */}
@@ -207,242 +177,239 @@ export default function AuthModal({ isOpen, onClose, onAuthenticated }: AuthModa
           )}
 
           <AnimatePresence mode="wait">
-            {step === 'phone' && (
+            {step === 'signin' && (
               <motion.form
-                key="phone"
+                key="signin"
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -20, opacity: 0 }}
-                onSubmit={handlePhoneSubmit}
+                onSubmit={handleSignInSubmit}
                 className="space-y-6"
               >
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
+                  <p className="text-white/60">Enter your email to sign in to LinkUp</p>
+                </div>
+
                 <div>
                   <label className="block text-white/80 text-sm font-medium mb-2">
-                    Phone Number
+                    Email Address
                   </label>
-                  
-                  {/* Country Picker */}
-                  <div className="relative mb-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowCountryPicker(!showCountryPicker)}
-                      className="w-full flex items-center justify-between p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/15 transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <span className="text-xl">{selectedCountry.flag}</span>
-                        <span className="font-medium">{selectedCountry.name}</span>
-                        <span className="text-white/60">{selectedCountry.dialCode}</span>
-                      </div>
-                      <ChevronDown size={20} className="text-white/60" />
-                    </button>
-                    
-                    {/* Country Dropdown */}
-                    {showCountryPicker && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/20 rounded-xl shadow-xl z-10 max-h-60 overflow-y-auto"
-                      >
-                        {countries.map((country) => (
-                          <button
-                            key={country.code}
-                            type="button"
-                            onClick={() => {
-                              setSelectedCountry(country)
-                              setShowCountryPicker(false)
-                            }}
-                            className="w-full flex items-center space-x-3 p-3 hover:bg-white/10 transition-colors text-left"
-                          >
-                            <span className="text-xl">{country.flag}</span>
-                            <span className="text-white font-medium flex-1">{country.name}</span>
-                            <span className="text-white/60">{country.dialCode}</span>
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Phone Input */}
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                      <span className="text-white/60">{selectedCountry.dialCode}</span>
-                      <div className="w-px h-6 bg-white/20"></div>
-                    </div>
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
                     <input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Enter phone number"
-                      className="w-full pl-20 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                      placeholder="Enter your email address"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 text-white/60 text-sm">
-                  <Shield size={16} />
-                  <span>We'll send you a verification code via SMS</span>
-                </div>
-
                 <motion.button
                   type="submit"
-                  disabled={isLoading || phoneNumber.length < 10}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
+                  disabled={isLoading || !email}
+                  whileHover={!isLoading && email ? { scale: 1.02 } : {}}
+                  whileTap={!isLoading && email ? { scale: 0.98 } : {}}
+                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
                 >
                   {isLoading ? (
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>Send Code</span>
+                      Send Verification Link
                       <ArrowRight size={20} />
                     </>
                   )}
                 </motion.button>
+
+                <div className="text-center pt-2">
+                  <span className="text-white/60">Don't have an account? </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep('signup')
+                      setError('')
+                      setEmail('')
+                      setFullName('')
+                    }}
+                    className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                  >
+                    Sign up here
+                  </button>
+                </div>
               </motion.form>
             )}
 
-            {step === 'otp' && (
+            {step === 'signup' && (
               <motion.form
-                key="otp"
+                key="signup"
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -20, opacity: 0 }}
-                onSubmit={handleOtpSubmit}
+                onSubmit={handleSignUpSubmit}
                 className="space-y-6"
               >
-                <div>
-                  <label className="block text-white/80 text-sm font-medium mb-2">
-                    Verification Code
-                  </label>
-                  <div className="flex space-x-3 justify-center">
-                    {otp.map((digit, index) => (
-                      <input
-                        key={index}
-                        id={`otp-${index}`}
-                        type="text"
-                        value={digit}
-                        onChange={(e) => handleOtpChange(index, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        className="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white text-center text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        maxLength={1}
-                      />
-                    ))}
-                  </div>
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">Create Account</h2>
+                  <p className="text-white/60">Join LinkUp and start messaging</p>
                 </div>
 
-                <div className="text-center">
-                  <p className="text-white/60 text-sm mb-2">
-                    Code sent to {selectedCountry.dialCode} {phoneNumber}
-                  </p>
-                  
-                  {/* Timer and Resend */}
-                  <div className="flex items-center justify-center space-x-2">
-                    {otpTimer > 0 ? (
-                      <>
-                        <Clock size={16} className="text-white/40" />
-                        <span className="text-white/60 text-sm">
-                          Resend in {otpTimer}s
-                        </span>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleResendOtp}
-                        disabled={isLoading}
-                        className="text-blue-400 text-sm hover:underline disabled:opacity-50"
-                      >
-                        Resend code
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <motion.button
-                  type="submit"
-                  disabled={isLoading || otp.join('').length !== 6}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span>Verify</span>
-                      <ArrowRight size={20} />
-                    </>
-                  )}
-                </motion.button>
-              </motion.form>
-            )}
-
-            {step === 'profile' && (
-              <motion.form
-                key="profile"
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -20, opacity: 0 }}
-                onSubmit={handleProfileSubmit}
-                className="space-y-6"
-              >
                 <div>
                   <label className="block text-white/80 text-sm font-medium mb-2">
                     Full Name
                   </label>
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                    required
-                  />
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                      placeholder="Enter your full name"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-white/80 text-sm font-medium mb-2">
-                    Email (Optional)
+                    Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40" size={20} />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="john@example.com"
-                      className="w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                      placeholder="Enter your email address"
+                      required
                     />
                   </div>
                 </div>
 
                 <motion.button
                   type="submit"
-                  disabled={isLoading || !fullName.trim()}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
+                  disabled={isLoading || !fullName || !email}
+                  whileHover={!isLoading && fullName && email ? { scale: 1.02 } : {}}
+                  whileTap={!isLoading && fullName && email ? { scale: 0.98 } : {}}
+                  className="w-full py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
                 >
                   {isLoading ? (
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>Get Started</span>
+                      Create Account
                       <ArrowRight size={20} />
                     </>
                   )}
                 </motion.button>
+
+                <div className="text-center pt-2">
+                  <span className="text-white/60">Already have an account? </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep('signin')
+                      setError('')
+                      setEmail('')
+                      setFullName('')
+                    }}
+                    className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                  >
+                    Sign in here
+                  </button>
+                </div>
               </motion.form>
+            )}
+
+            {step === 'verification' && (
+              <motion.div
+                key="verification"
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                className="space-y-4 text-center"
+              >
+                <div className="w-12 h-12 md:w-16 md:h-16 mx-auto bg-green-500/10 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-400" />
+                </div>
+
+                <div>
+                  <h2 className="text-lg md:text-xl font-bold text-white mb-2">Check your email</h2>
+                  <p className="text-white/60 text-sm mb-3">
+                    We've sent a verification link to:
+                  </p>
+                  <p className="text-blue-400 font-medium text-sm break-all">{email}</p>
+                </div>
+
+                <div className="p-3 md:p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <p className="text-blue-400 text-xs md:text-sm">
+                    Click the link in your email to complete the verification process and start messaging.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  {/* Resend button with timer */}
+                  <motion.button
+                    onClick={handleResendEmail}
+                    disabled={!canResend || isLoading}
+                    whileHover={canResend ? { scale: 1.02 } : {}}
+                    whileTap={canResend ? { scale: 0.98 } : {}}
+                    className={`w-full py-2.5 md:py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm ${
+                      canResend 
+                        ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' 
+                        : 'bg-white/5 text-white/40 cursor-not-allowed'
+                    }`}
+                  >
+                    {isLoading ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : canResend ? (
+                      <>
+                        <RefreshCw className="w-4 h-4" />
+                        Resend Email
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-4 h-4" />
+                        Resend in {verificationTimer}s
+                      </>
+                    )}
+                  </motion.button>
+
+                  <button
+                    onClick={() => {
+                      setStep('signin')
+                      setVerificationTimer(0)
+                      setCanResend(false)
+                      setError('')
+                    }}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors text-sm"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Sign In
+                  </button>
+
+                  <p className="text-white/50 text-xs mt-2">
+                    Didn't receive the email? Check your spam folder.
+                  </p>
+                </div>
+              </motion.div>
             )}
           </AnimatePresence>
 
           {/* Features */}
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <div className="grid grid-cols-2 gap-4 text-center">
+          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-white/10">
+            <div className="grid grid-cols-2 gap-3 text-center">
               <div className="text-white/60">
-                <div className="text-2xl mb-1">🔒</div>
+                <div className="text-lg md:text-xl mb-1">🔒</div>
                 <div className="text-xs">End-to-End Encrypted</div>
               </div>
               <div className="text-white/60">
-                <div className="text-2xl mb-1">🤖</div>
+                <div className="text-lg md:text-xl mb-1">🤖</div>
                 <div className="text-xs">AI-Powered Features</div>
               </div>
             </div>
