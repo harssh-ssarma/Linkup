@@ -1,4 +1,4 @@
-# LinkUp Authentication Flows
+# LinkUp Authentication Flow
 
 ## 📋 Table of Contents
 - [Current Authentication Flow (Firebase Email)](#current-authentication-flow-firebase-email)
