@@ -57,7 +57,7 @@ export default function ChatSidebar({ activeChat, onChatSelect }: ChatSidebarPro
   )
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-[200px]">
       {/* Search Bar */}
       <div className="p-4">
         <div className="relative">

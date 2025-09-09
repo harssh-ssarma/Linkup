@@ -2,227 +2,147 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, Video, Image as ImageIcon, Mic, Type, Users, Radio, X, Upload } from 'lucide-react'
+import { Camera, Video, Image, Type, Mic, MapPin, Users, X } from 'lucide-react'
 
 export default function CreateSection() {
-  const [activeCreate, setActiveCreate] = useState<string | null>(null)
-  const [caption, setCaption] = useState('')
-  const [selectedMedia, setSelectedMedia] = useState<File[]>([])
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [createType, setCreateType] = useState<'story' | 'post' | null>(null)
 
   const createOptions = [
     {
-      id: 'photo',
-      title: 'Photo Post',
-      subtitle: 'Share a photo with your followers',
-      icon: ImageIcon,
-      color: 'from-blue-500 to-cyan-500'
-    },
-    {
-      id: 'video',
-      title: 'Video Post',
-      subtitle: 'Upload or record a video',
-      icon: Video,
-      color: 'from-purple-500 to-pink-500'
-    },
-    {
-      id: 'reel',
-      title: 'Create Reel',
-      subtitle: 'Short-form vertical video',
-      icon: Camera,
-      color: 'from-orange-500 to-red-500'
-    },
-    {
       id: 'story',
-      title: 'Add Story',
-      subtitle: '24-hour temporary update',
-      icon: Type,
-      color: 'from-green-500 to-emerald-500'
+      title: 'Create Story',
+      description: 'Share a moment that disappears in 24 hours',
+      icon: Camera,
+      gradient: 'from-purple-500 to-pink-500'
     },
     {
-      id: 'live',
-      title: 'Go Live',
-      subtitle: 'Stream live to your audience',
-      icon: Radio,
-      color: 'from-red-500 to-pink-500'
+      id: 'post',
+      title: 'Create Post',
+      description: 'Share a photo or video to your feed',
+      icon: Image,
+      gradient: 'from-blue-500 to-purple-600'
+    },
+    {
+      id: 'text',
+      title: 'Text Post',
+      description: 'Share your thoughts with text',
+      icon: Type,
+      gradient: 'from-emerald-500 to-blue-500'
     },
     {
       id: 'voice',
       title: 'Voice Note',
-      subtitle: 'Record and share audio',
+      description: 'Record and share a voice message',
       icon: Mic,
-      color: 'from-indigo-500 to-purple-500'
+      gradient: 'from-orange-500 to-red-500'
     }
   ]
 
-  const handleMediaSelect = (type: string) => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = type === 'photo' ? 'image/*' : 'video/*'
-    input.multiple = true
-    input.onchange = (e) => {
-      const files = Array.from((e.target as HTMLInputElement).files || [])
-      setSelectedMedia(files)
-      setActiveCreate(type)
-    }
-    input.click()
-  }
-
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900/10">
       {/* Header */}
-      <div className="glass-effect border-b border-white/20 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-white">Create</h1>
-          {activeCreate && (
+      <div className="glass-card border-b border-white/10 px-4 py-3">
+        <h1 className="text-xl font-bold text-white">Create</h1>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        {/* Quick Actions */}
+        <div className="glass-card p-6 mb-6">
+          <h2 className="text-lg font-semibold text-white mb-4">Quick Create</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {createOptions.map((option) => {
+              const Icon = option.icon
+              return (
+                <motion.button
+                  key={option.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setCreateType(option.id as any)
+                    setShowCreateModal(true)
+                  }}
+                  className={`p-4 rounded-xl bg-gradient-to-r ${option.gradient} bg-opacity-20 border border-white/20 text-left hover:scale-105 transition-transform`}
+                >
+                  <Icon size={24} className="text-white mb-2" />
+                  <h3 className="text-white font-medium mb-1">{option.title}</h3>
+                  <p className="text-white/60 text-sm">{option.description}</p>
+                </motion.button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Camera Options */}
+        <div className="glass-card p-6 mb-6">
+          <h2 className="text-lg font-semibold text-white mb-4">Camera</h2>
+          <div className="flex space-x-4">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setActiveCreate(null)
-                setSelectedMedia([])
-                setCaption('')
-              }}
-              className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              className="flex-1 p-4 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-xl border border-white/20 text-center"
             >
-              <X size={20} />
+              <Camera size={32} className="text-white mx-auto mb-2" />
+              <p className="text-white font-medium">Photo</p>
             </motion.button>
-          )}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl border border-white/20 text-center"
+            >
+              <Video size={32} className="text-white mx-auto mb-2" />
+              <p className="text-white font-medium">Video</p>
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Recent Drafts */}
+        <div className="glass-card p-6">
+          <h2 className="text-lg font-semibold text-white mb-4">Recent Drafts</h2>
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Image size={24} className="text-white/60" />
+            </div>
+            <p className="text-white/60">No drafts yet</p>
+            <p className="text-white/40 text-sm mt-1">Your saved drafts will appear here</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {!activeCreate ? (
-          /* Create Options Grid */
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-              {createOptions.map((option, index) => {
-                const Icon = option.icon
-                return (
-                  <motion.div
-                    key={option.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      if (option.id === 'photo' || option.id === 'video') {
-                        handleMediaSelect(option.id)
-                      } else {
-                        setActiveCreate(option.id)
-                      }
-                    }}
-                    className="glass-effect border border-white/20 rounded-2xl p-6 cursor-pointer hover:border-white/40 transition-all group"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${option.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <Icon className="text-white" size={28} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">{option.title}</h3>
-                        <p className="text-white/60 text-sm">{option.subtitle}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              })}
+      {/* Create Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="glass-card p-6 w-full max-w-md"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">
+                {createType === 'story' ? 'Create Story' : 'Create Post'}
+              </h3>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10"
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            {/* Quick Actions */}
-            <div className="mt-8 max-w-4xl mx-auto">
-              <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { id: 'camera', label: 'Camera', icon: Camera },
-                  { id: 'gallery', label: 'Gallery', icon: ImageIcon },
-                  { id: 'group', label: 'New Group', icon: Users },
-                  { id: 'broadcast', label: 'Broadcast', icon: Radio }
-                ].map((action) => {
-                  const Icon = action.icon
-                  return (
-                    <motion.button
-                      key={action.id}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex flex-col items-center space-y-2 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
-                    >
-                      <Icon size={24} className="text-white/80" />
-                      <span className="text-sm text-white/80">{action.label}</span>
-                    </motion.button>
-                  )
-                })}
-              </div>
+            <div className="space-y-4">
+              <button className="w-full p-4 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-xl border border-white/20 text-left">
+                <Camera size={20} className="inline mr-3 text-white" />
+                <span className="text-white">Take Photo</span>
+              </button>
+              <button className="w-full p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl border border-white/20 text-left">
+                <Video size={20} className="inline mr-3 text-white" />
+                <span className="text-white">Record Video</span>
+              </button>
+              <button className="w-full p-4 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-xl border border-white/20 text-left">
+                <Image size={20} className="inline mr-3 text-white" />
+                <span className="text-white">Choose from Gallery</span>
+              </button>
             </div>
-          </div>
-        ) : (
-          /* Create Post Interface */
-          <div className="p-6 max-w-2xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-effect border border-white/20 rounded-2xl overflow-hidden"
-            >
-              {/* Media Preview */}
-              {selectedMedia.length > 0 && (
-                <div className="aspect-square bg-gradient-to-br from-purple-900/20 to-blue-900/20 flex items-center justify-center">
-                  <div className="text-center text-white/60">
-                    <Upload size={48} className="mx-auto mb-4" />
-                    <p>{selectedMedia.length} file(s) selected</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Caption Input */}
-              <div className="p-6">
-                <div className="flex items-start space-x-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                    <span className="text-white font-semibold">JD</span>
-                  </div>
-                  <div className="flex-1">
-                    <textarea
-                      value={caption}
-                      onChange={(e) => setCaption(e.target.value)}
-                      placeholder="Write a caption..."
-                      className="w-full bg-transparent text-white placeholder-white/40 resize-none focus:outline-none"
-                      rows={4}
-                    />
-                  </div>
-                </div>
-
-                {/* Post Options */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-white/80">Add location</span>
-                    <button className="text-blue-400 text-sm">Add</button>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-white/80">Tag people</span>
-                    <button className="text-blue-400 text-sm">Tag</button>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-white/80">Advanced settings</span>
-                    <button className="text-blue-400 text-sm">Edit</button>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex space-x-3">
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-1 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-semibold"
-                  >
-                    Save Draft
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white font-semibold shadow-lg"
-                  >
-                    Share
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }

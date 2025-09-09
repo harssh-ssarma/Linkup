@@ -20,7 +20,7 @@ export default function StoriesBar() {
       id: 'own',
       user: {
         name: 'Your Story',
-        avatar: 'https://ui-avatars.com/api/?name=You&background=4F46E5&color=fff'
+        avatar: 'https://ui-avatars.com/api/?name=Harsh+Sharma&background=4F46E5&color=fff'
       },
       hasNewStory: false,
       isOwn: true
@@ -28,32 +28,32 @@ export default function StoriesBar() {
     {
       id: '1',
       user: {
-        name: 'Alice',
-        avatar: 'https://ui-avatars.com/api/?name=Alice&background=059669&color=fff'
+        name: 'Sunita Mummy',
+        avatar: 'https://ui-avatars.com/api/?name=Sunita+Mummy&background=059669&color=fff'
       },
       hasNewStory: true
     },
     {
       id: '2',
       user: {
-        name: 'Bob',
-        avatar: 'https://ui-avatars.com/api/?name=Bob&background=DC2626&color=fff'
+        name: 'Rajesh Papa',
+        avatar: 'https://ui-avatars.com/api/?name=Rajesh+Papa&background=DC2626&color=fff'
       },
       hasNewStory: true
     },
     {
       id: '3',
       user: {
-        name: 'Carol',
-        avatar: 'https://ui-avatars.com/api/?name=Carol&background=7C3AED&color=fff'
+        name: 'Priya Didi',
+        avatar: 'https://ui-avatars.com/api/?name=Priya+Didi&background=7C3AED&color=fff'
       },
       hasNewStory: false
     },
     {
       id: '4',
       user: {
-        name: 'David',
-        avatar: 'https://ui-avatars.com/api/?name=David&background=EA580C&color=fff'
+        name: 'Kavya Friend',
+        avatar: 'https://ui-avatars.com/api/?name=Kavya+Friend&background=EA580C&color=fff'
       },
       hasNewStory: true
     }

@@ -1,311 +1,225 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Smile, Paperclip, Mic, Phone, Video, MoreVertical, Bot } from 'lucide-react'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { 
+  ArrowLeft, 
+  MoreVertical, 
+  Smile, 
+  Paperclip, 
+  Mic, 
+  Send,
+  Check,
+  CheckCheck,
+  Phone,
+  Video
+} from 'lucide-react'
 import Image from 'next/image'
-import EmojiPicker from 'emoji-picker-react'
 
 interface Message {
   id: string
-  content: string
-  sender: 'me' | 'other' | 'ai'
-  timestamp: string
-  type: 'text' | 'image' | 'audio' | 'video'
-  reactions?: string[]
+  text: string
+  time: string
+  isSent: boolean
+  status?: 'sent' | 'delivered' | 'read'
+  type?: 'text' | 'image' | 'voice'
 }
 
 interface ChatWindowProps {
   chatId: string
+  onBack?: () => void
 }
 
-export default function ChatWindow({ chatId }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>([
+export default function ChatWindow({ chatId, onBack }: ChatWindowProps) {
+  const [message, setMessage] = useState('')
+  const [messages] = useState<Message[]>([
     {
       id: '1',
-      content: 'Hey! How are you doing today?',
-      sender: 'other',
-      timestamp: '10:30 AM',
-      type: 'text'
+      text: 'Hey! How are you doing?',
+      time: '12:30',
+      isSent: false
     },
     {
       id: '2',
-      content: 'I\'m doing great! Just working on some exciting projects. How about you?',
-      sender: 'me',
-      timestamp: '10:32 AM',
-      type: 'text'
+      text: 'I\'m doing great! Just finished work. How about you?',
+      time: '12:32',
+      isSent: true,
+      status: 'read'
     },
     {
       id: '3',
-      content: 'That sounds awesome! I\'d love to hear more about it.',
-      sender: 'other',
-      timestamp: '10:33 AM',
-      type: 'text'
+      text: 'That\'s awesome! I\'m planning to go out for dinner tonight. Want to join?',
+      time: '12:35',
+      isSent: false
+    },
+    {
+      id: '4',
+      text: 'Sounds perfect! What time and where?',
+      time: '12:36',
+      isSent: true,
+      status: 'delivered'
     }
   ])
-  
-  const [newMessage, setNewMessage] = useState('')
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [isTyping, setIsTyping] = useState(false)
-  const [showAIAssistant, setShowAIAssistant] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const contact = {
+    name: 'Harsh',
+    avatar: 'https://ui-avatars.com/api/?name=Harsh&background=4F46E5&color=fff',
+    isOnline: true,
+    lastSeen: 'online'
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
-        content: newMessage,
-        sender: 'me',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        type: 'text'
-      }
-      setMessages([...messages, message])
-      setNewMessage('')
-      
-      // Simulate AI response
-      setTimeout(() => {
-        const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          content: 'Thanks for your message! I\'m an AI assistant. How can I help you today?',
-          sender: 'ai',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          type: 'text'
-        }
-        setMessages(prev => [...prev, aiResponse])
-      }, 1000)
+  const handleSend = () => {
+    if (message.trim()) {
+      // Handle send message
+      setMessage('')
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
+  const getStatusIcon = (status?: string) => {
+    switch (status) {
+      case 'sent': return <Check size={14} className="text-white/60" />
+      case 'delivered': return <CheckCheck size={14} className="text-white/60" />
+      case 'read': return <CheckCheck size={14} className="text-blue-400" />
+      default: return null
     }
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Chat Header */}
-      <motion.div 
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="glass-effect border-b border-white/20 p-4 flex items-center justify-between"
-      >
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/20">
+    <div className="flex flex-col h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Header */}
+      <div className="glass-effect border-b border-white/20 px-3 sm:px-4 py-2 sm:py-3 flex items-center">
+        {/* Back Button - Mobile & Tablet Only */}
+        {onBack && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onBack}
+            className="mr-2 sm:mr-3 p-1.5 sm:p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors lg:hidden"
+          >
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+          </motion.button>
+        )}
+
+        {/* Contact Info */}
+        <div className="flex items-center flex-1 min-w-0">
+          <div className="relative mr-2 sm:mr-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden ring-1 sm:ring-2 ring-blue-500/30">
               <Image
-                src="https://avatar.iran.liara.run/public/girl?username=alice"
-                alt="Alice"
-                width={40}
-                height={40}
+                src={contact.avatar}
+                alt={contact.name}
+                width={56}
+                height={56}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900"></div>
+            {contact.isOnline && (
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-1 sm:border-2 border-slate-900" />
+            )}
           </div>
-          <div>
-            <h2 className="font-semibold text-white">Alice Johnson</h2>
-            <p className="text-sm text-white/60">Online</p>
+          
+          <div className="flex-1 min-w-0">
+            <h2 className="text-white font-semibold truncate text-sm sm:text-base">{contact.name}</h2>
+            <p className="text-xs sm:text-sm text-green-400">{contact.lastSeen}</p>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setShowAIAssistant(!showAIAssistant)}
-            className={`p-2 rounded-lg transition-colors ${showAIAssistant ? 'bg-blue-500/30 text-blue-300' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
-          >
-            <Bot size={20} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
-          >
-            <Phone size={20} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
-          >
-            <Video size={20} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
-          >
-            <MoreVertical size={20} />
-          </motion.button>
-        </div>
-      </motion.div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <AnimatePresence>
-          {messages.map((message, index) => (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-xs lg:max-w-md ${
-                message.sender === 'me' 
-                  ? 'chat-bubble chat-bubble-sent' 
-                  : message.sender === 'ai'
-                  ? 'chat-bubble bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'chat-bubble chat-bubble-received'
-              }`}>
-                {message.sender === 'ai' && (
-                  <div className="flex items-center space-x-1 mb-1">
-                    <Bot size={14} />
-                    <span className="text-xs opacity-80">AI Assistant</span>
-                  </div>
-                )}
-                <p className="text-sm">{message.content}</p>
-                <p className={`text-xs mt-1 ${
-                  message.sender === 'me' || message.sender === 'ai' ? 'text-white/70' : 'text-gray-500'
-                }`}>
-                  {message.timestamp}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-        
-        {isTyping && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex justify-start"
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="p-1.5 sm:p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
           >
-            <div className="chat-bubble chat-bubble-received">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-        
-        <div ref={messagesEndRef} />
+            <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="p-1.5 sm:p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="p-1.5 sm:p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
+          </motion.button>
+        </div>
       </div>
 
-      {/* AI Assistant Panel */}
-      <AnimatePresence>
-        {showAIAssistant && (
+      {/* Messages */}
+      <div 
+        className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 space-y-2 sm:space-y-3"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='a' patternUnits='userSpaceOnUse' width='20' height='20' patternTransform='scale(0.5) rotate(0)'%3e%3crect x='0' y='0' width='100%25' height='100%25' fill='%23000000'/%3e%3cpath d='m0 10h20v1h-20zm10-10v20h1v-20z' stroke-width='0.1' stroke='%23ffffff' fill='none' opacity='0.02'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='100%25' height='100%25' fill='url(%23a)'/%3e%3c/svg%3e")`,
+        }}
+      >
+        {messages.map((msg, index) => (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="glass-effect border-t border-white/20 p-4"
+            key={msg.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className={`flex ${msg.isSent ? 'justify-end' : 'justify-start'}`}
           >
-            <div className="flex items-center space-x-2 mb-3">
-              <Bot className="text-purple-400" size={20} />
-              <span className="text-white font-semibold">AI Assistant</span>
-            </div>
-            <div className="flex space-x-2">
-              <button className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm hover:bg-purple-500/30 transition-colors">
-                Smart Reply
-              </button>
-              <button className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm hover:bg-blue-500/30 transition-colors">
-                Translate
-              </button>
-              <button className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm hover:bg-green-500/30 transition-colors">
-                Summarize
-              </button>
+            <div
+              className={`max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl backdrop-blur-md border ${
+                msg.isSent
+                  ? 'bg-gradient-to-r from-blue-500/80 to-purple-600/80 border-blue-400/30 text-white ml-auto'
+                  : 'bg-white/10 border-white/20 text-white mr-auto'
+              }`}
+            >
+              <p className="text-xs sm:text-sm leading-relaxed break-words">{msg.text}</p>
+              <div className="flex items-center justify-end space-x-1 mt-1 sm:mt-2">
+                <span className="text-xs text-white/70">{msg.time}</span>
+                {msg.isSent && getStatusIcon(msg.status)}
+              </div>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ))}
+      </div>
 
-      {/* Message Input */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="glass-effect border-t border-white/20 p-4"
-      >
-        <div className="flex items-center space-x-3">
+      {/* Input Area */}
+      <div className="glass-effect border-t border-white/20 px-3 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Attachment Button */}
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
+            whileTap={{ scale: 0.95 }}
+            className="p-1.5 sm:p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
           >
-            <Paperclip size={20} />
+            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
           </motion.button>
-          
+
+          {/* Message Input */}
           <div className="flex-1 relative">
             <input
               type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Type a message..."
-              className="w-full message-input"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm"
             />
-            
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
+              whileTap={{ scale: 0.95 }}
+              className="absolute right-1.5 sm:right-2 top-1/2 transform -translate-y-1/2 p-1 sm:p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
             >
-              <Smile size={20} />
+              <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>
           </div>
-          
+
+          {/* Send/Voice Button */}
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
+            whileTap={{ scale: 0.95 }}
+            onClick={message.trim() ? handleSend : undefined}
+            className={`p-2 sm:p-2.5 rounded-full flex-shrink-0 transition-all ${
+              message.trim()
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
+            }`}
           >
-            <Mic size={20} />
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={sendMessage}
-            className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white shadow-lg"
-          >
-            <Send size={20} />
+            {message.trim() ? <Send className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
           </motion.button>
         </div>
-        
-        {/* Emoji Picker */}
-        <AnimatePresence>
-          {showEmojiPicker && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-20 right-4"
-            >
-              <EmojiPicker
-                onEmojiClick={(emojiData) => {
-                  setNewMessage(prev => prev + emojiData.emoji)
-                  setShowEmojiPicker(false)
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   )
 }

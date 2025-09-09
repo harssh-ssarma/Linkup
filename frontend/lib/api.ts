@@ -67,6 +67,40 @@ class ApiService {
     })
   }
 
+  async sendEmailOTP(email: string, authMode: string, fullName?: string) {
+    return this.request('/api/auth/send-email-otp/', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: email,
+        auth_mode: authMode,
+        full_name: fullName || '',
+      }),
+    })
+  }
+
+  async verifyEmailOTP(email: string, otpCode: string) {
+    const response = await this.request('/api/auth/verify-email-otp/', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: email,
+        otp_code: otpCode,
+      }),
+    })
+
+    // Store token if verification successful
+    if (response.data?.token) {
+      this.token = response.data.token
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', response.data.token)
+        if (response.data.user) {
+          localStorage.setItem('user_data', JSON.stringify(response.data.user))
+        }
+      }
+    }
+
+    return response
+  }
+
   async verifyOTP(phoneNumber: string, otpCode: string) {
     const response = await this.request('/api/auth/verify-otp/', {
       method: 'POST',
@@ -90,13 +124,34 @@ class ApiService {
     return response
   }
 
-  async completeProfile(phoneNumber: string, fullName: string, email?: string) {
+  async verifyFirebaseToken(firebaseToken: string) {
+    const response = await this.request('/api/auth/verify-otp/', {
+      method: 'POST',
+      body: JSON.stringify({
+        firebase_token: firebaseToken,
+      }),
+    })
+
+    // Store token if verification successful
+    if (response.data?.token) {
+      this.token = response.data.token
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', response.data.token)
+        if (response.data.user) {
+          localStorage.setItem('user_data', JSON.stringify(response.data.user))
+        }
+      }
+    }
+
+    return response
+  }
+
+  async completeProfile(email: string, fullName: string) {
     const response = await this.request('/api/auth/complete-profile/', {
       method: 'POST',
       body: JSON.stringify({
-        phone_number: phoneNumber,
+        email: email,
         full_name: fullName,
-        email: email || '',
       }),
     })
 

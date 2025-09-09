@@ -1,11 +1,20 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'cdshfgufhkhfjsdcbkjdsghsdscksdhjsdbjhkcs'
-DEBUG = True
+# Load environment variables
+load_dotenv()
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'cdshfgufhkhfjsdcbkjdsghsdscksdhjsdbjhkcs')
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']
+
+# Firebase Configuration
+FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID')
+FIREBASE_PRIVATE_KEY = os.getenv('FIREBASE_PRIVATE_KEY')
+FIREBASE_CLIENT_EMAIL = os.getenv('FIREBASE_CLIENT_EMAIL')
 
 # Application definition
 INSTALLED_APPS = [
@@ -17,9 +26,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'channels',
     
     # Local apps
     'apps.authentication',
+    'apps.chat',
+    'apps.social',
+    'apps.ai',
+    'apps.media',
+    'apps.notifications',
+    'apps.search',
 ]
 
 MIDDLEWARE = [
@@ -116,6 +132,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Channels configuration
+ASGI_APPLICATION = 'linkup.asgi.application'
+
+# Channel layers configuration (using Redis for production, in-memory for development)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
 
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
