@@ -20,6 +20,11 @@ INSTALLED_APPS = [
     
     # Local apps
     'apps.authentication',
+    'apps.chat',
+    'apps.ai',
+    'apps.media',
+    'apps.social',
+    'apps.notifications',
 ]
 
 MIDDLEWARE = [
