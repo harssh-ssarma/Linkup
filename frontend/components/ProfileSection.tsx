@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { auth } from '@/lib/firebase'
+import { signOut } from 'firebase/auth'
 import { 
   Settings, 
   Edit3, 
@@ -22,7 +24,8 @@ import {
   Phone,
   User,
   Heart,
-  Clock
+  Clock,
+  LogOut
 } from 'lucide-react'
 import Image from 'next/image'
 import SettingsModal from './SettingsModal'
@@ -49,21 +52,51 @@ export default function ProfileSection() {
   const [activeTab, setActiveTab] = useState<'profile' | 'posts' | 'stories'>('profile')
   const [showSettings, setShowSettings] = useState(false)
   const [showEditProfile, setShowEditProfile] = useState(false)
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  
+  // Show sign out confirmation
+  const handleSignOutClick = () => {
+    setShowSignOutConfirm(true)
+  }
+
+  // Actual sign out function
+  const handleConfirmSignOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await signOut(auth)
+      // Clear session data
+      sessionStorage.removeItem('session_started')
+      sessionStorage.removeItem('current_user')
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('user_data')
+      // Firebase onAuthStateChanged will handle the redirect to login
+    } catch (error) {
+      console.error('Error signing out:', error)
+      setIsSigningOut(false)
+    }
+    setShowSignOutConfirm(false)
+  }
+
+  // Cancel sign out
+  const handleCancelSignOut = () => {
+    setShowSignOutConfirm(false)
+  }
   
   const [profile, setProfile] = useState<UserProfile>({
     id: '1',
-    name: 'John Doe',
-    username: 'johndoe',
-    bio: '🚀 Full Stack Developer | 📱 Mobile App Enthusiast | 🌍 Travel Lover\nBuilding the future, one line of code at a time ✨',
-    avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=4F46E5&color=fff&size=200',
-    coverImage: 'https://picsum.photos/800/300?random=cover',
+    name: 'Arjun Sharma',
+    username: 'arjunsharma',
+    bio: '🚀 Full Stack Developer | 📱 Mobile App Enthusiast | 🌍 Mumbai Explorer\nBuilding the future, one line of code at a time ✨',
+    avatar: 'https://ui-avatars.com/api/?name=Arjun+Sharma&background=4F46E5&color=fff&size=200',
+    coverImage: 'https://picsum.photos/800/300?random=mumbai',
     stats: {
       posts: 127,
       followers: 1234,
       following: 567
     },
-    location: 'San Francisco, CA',
-    website: 'johndoe.dev',
+    location: 'Mumbai, Maharashtra',
+    website: 'arjunsharma.dev',
     joinDate: 'March 2020',
     isVerified: true
   })
@@ -184,6 +217,17 @@ export default function ProfileSection() {
                 <div className="text-sm text-white/60">{stat.label}</div>
               </motion.div>
             ))}
+          </div>
+
+          {/* Sign Out Button */}
+          <div className="mb-6">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleSignOutClick}
+              className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 font-medium flex items-center justify-center space-x-2"
+            >
+              <span>Sign Out</span>
+            </motion.button>
           </div>
 
           {/* Bio */}
@@ -332,7 +376,7 @@ export default function ProfileSection() {
                   className="aspect-square bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-lg overflow-hidden cursor-pointer group"
                 >
                   <Image
-                    src={`https://picsum.photos/300/300?random=${index + 10}`}
+                    src={`https://picsum.photos/300/300?random=${index + 100}`}
                     alt={`Post ${index + 1}`}
                     width={300}
                     height={300}
@@ -367,7 +411,7 @@ export default function ProfileSection() {
                     className="aspect-[9/16] bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-xl overflow-hidden cursor-pointer group relative"
                   >
                     <Image
-                      src={`https://picsum.photos/180/320?random=${index + 20}`}
+                      src={`https://picsum.photos/180/320?random=${index + 200}`}
                       alt={`Saved Story ${index + 1}`}
                       width={180}
                       height={320}
@@ -394,6 +438,81 @@ export default function ProfileSection() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
       />
+
+      {/* Sign Out Confirmation Modal */}
+      <AnimatePresence>
+        {showSignOutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={handleCancelSignOut}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.3 }}
+              className="bg-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/10 p-6 w-full max-w-sm mx-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-8 h-8 text-red-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Sign Out
+                </h3>
+                <p className="text-white/70 text-sm">
+                  Are you sure you want to sign out? You'll need to enter your email again to sign back in.
+                </p>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex space-x-3">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCancelSignOut}
+                  className="flex-1 px-4 py-3 bg-slate-700/50 hover:bg-slate-700/70 text-white/80 hover:text-white rounded-xl transition-colors duration-200 font-medium"
+                  disabled={isSigningOut}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleConfirmSignOut}
+                  disabled={isSigningOut}
+                  className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white rounded-xl transition-colors duration-200 font-medium flex items-center justify-center space-x-2"
+                >
+                  {isSigningOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Signing Out...</span>
+                    </>
+                  ) : (
+                    <span>Sign Out</span>
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

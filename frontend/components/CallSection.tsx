@@ -29,7 +29,7 @@ export default function CallSection() {
   const callHistory: CallHistory[] = [
     {
       id: '1',
-      name: 'Sarah Johnson',
+      name: 'Sneha Mehta',
       avatar: '/api/placeholder/40/40',
       type: 'incoming',
       callType: 'video',
@@ -38,7 +38,7 @@ export default function CallSection() {
     },
     {
       id: '2',
-      name: 'Mike Chen',
+      name: 'Vikram Singh',
       avatar: '/api/placeholder/40/40',
       type: 'outgoing',
       callType: 'voice',
@@ -47,7 +47,7 @@ export default function CallSection() {
     },
     {
       id: '3',
-      name: 'Emma Wilson',
+      name: 'Ananya Iyer',
       avatar: '/api/placeholder/40/40',
       type: 'missed',
       callType: 'video',
@@ -55,7 +55,7 @@ export default function CallSection() {
     },
     {
       id: '4',
-      name: 'David Park',
+      name: 'Rohan Kumar',
       avatar: '/api/placeholder/40/40',
       type: 'outgoing',
       callType: 'voice',
@@ -64,7 +64,7 @@ export default function CallSection() {
     },
     {
       id: '5',
-      name: 'Lisa Brown',
+      name: 'Ishita Agarwal',
       avatar: '/api/placeholder/40/40',
       type: 'incoming',
       callType: 'voice',
@@ -76,32 +76,32 @@ export default function CallSection() {
   const contacts: Contact[] = [
     {
       id: '1',
-      name: 'Sarah Johnson',
+      name: 'Sneha Mehta',
       avatar: '/api/placeholder/40/40',
       status: 'online'
     },
     {
       id: '2',
-      name: 'Mike Chen',
+      name: 'Vikram Singh',
       avatar: '/api/placeholder/40/40',
       status: 'online'
     },
     {
       id: '3',
-      name: 'Emma Wilson',
+      name: 'Ananya Iyer',
       avatar: '/api/placeholder/40/40',
       status: 'offline',
       lastSeen: 'last seen 5 minutes ago'
     },
     {
       id: '4',
-      name: 'David Park',
+      name: 'Rohan Kumar',
       avatar: '/api/placeholder/40/40',
       status: 'busy'
     },
     {
       id: '5',
-      name: 'Lisa Brown',
+      name: 'Ishita Agarwal',
       avatar: '/api/placeholder/40/40',
       status: 'online'
     }

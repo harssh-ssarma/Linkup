@@ -31,25 +31,25 @@ export default function NewChatModal({ isOpen, onClose, onChatCreated }: NewChat
   const mockContacts: Contact[] = [
     {
       id: '1',
-      name: 'Alice Johnson',
-      phone: '+1 (555) 123-4567',
-      avatar: 'https://ui-avatars.com/api/?name=Alice+Johnson&background=random&color=fff',
+      name: 'Priya Patel',
+      phone: '+91 98765 43210',
+      avatar: 'https://ui-avatars.com/api/?name=Priya+Patel&background=random&color=fff',
       isOnline: true,
       isRegistered: true
     },
     {
       id: '2',
-      name: 'Bob Smith',
-      phone: '+1 (555) 987-6543',
-      avatar: 'https://ui-avatars.com/api/?name=Bob+Smith&background=random&color=fff',
+      name: 'Rahul Gupta',
+      phone: '+91 87654 32109',
+      avatar: 'https://ui-avatars.com/api/?name=Rahul+Gupta&background=random&color=fff',
       isOnline: false,
       isRegistered: true
     },
     {
       id: '3',
-      name: 'Carol Davis',
-      phone: '+1 (555) 456-7890',
-      avatar: 'https://ui-avatars.com/api/?name=Carol+Davis&background=random&color=fff',
+      name: 'Kavya Reddy',
+      phone: '+91 76543 21098',
+      avatar: 'https://ui-avatars.com/api/?name=Kavya+Reddy&background=random&color=fff',
       isOnline: true,
       isRegistered: false
     }
@@ -125,7 +125,6 @@ export default function NewChatModal({ isOpen, onClose, onChatCreated }: NewChat
               {[
                 { id: 'contacts', label: 'Contacts', icon: UserPlus },
                 { id: 'groups', label: 'New Group', icon: Users },
-                { id: 'channels', label: 'New Channel', icon: Radio }
               ].map((tab) => {
                 const isActive = activeTab === tab.id
                 const Icon = tab.icon

@@ -67,8 +67,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       title: 'Account',
       icon: User,
       items: [
-        { id: 'phone', title: 'Phone Number', subtitle: '+1 (555) 123-4567' },
-        { id: 'username', title: 'Username', subtitle: '@johndoe' },
+        { id: 'phone', title: 'Phone Number', subtitle: '+91 98765 43210' },
+        { id: 'username', title: 'Username', subtitle: '@arjunsharma' },
       ]
     },
     {
@@ -353,11 +353,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
                         <div className="p-4 bg-white/5 rounded-xl">
                           <h4 className="text-white font-medium mb-2">Phone Number</h4>
-                          <p className="text-white/60 text-sm">+1 (555) 123-4567</p>
+                          <p className="text-white/60 text-sm">+91 98765 43210</p>
                         </div>
                         <div className="p-4 bg-white/5 rounded-xl">
                           <h4 className="text-white font-medium mb-2">Username</h4>
-                          <p className="text-white/60 text-sm">@johndoe</p>
+                          <p className="text-white/60 text-sm">@arjunsharma</p>
                         </div>
                       </div>
                     )}

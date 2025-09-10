@@ -38,16 +38,16 @@ export default function FeedSection() {
       id: '1',
       user: {
         id: 'u1',
-        name: 'Alice Johnson',
-        username: 'alice_j',
-        avatar: 'https://ui-avatars.com/api/?name=Alice+Johnson&background=4F46E5&color=fff',
+        name: 'Priya Sharma',
+        username: 'priya_sharma',
+        avatar: 'https://ui-avatars.com/api/?name=Priya+Sharma&background=4F46E5&color=fff',
         isVerified: true
       },
       content: {
         type: 'photo',
-        media: ['https://picsum.photos/400/600?random=1'],
-        caption: 'Beautiful sunset at the beach! 🌅 #sunset #beach #nature',
-        location: 'Malibu Beach, CA'
+        media: ['https://picsum.photos/400/600?random=101'],
+        caption: 'Beautiful sunset at Marina Beach! 🌅 #sunset #beach #chennai',
+        location: 'Marina Beach, Chennai'
       },
       engagement: {
         likes: 1234,
@@ -62,15 +62,15 @@ export default function FeedSection() {
       id: '2',
       user: {
         id: 'u2',
-        name: 'Tech News',
-        username: 'technews',
-        avatar: 'https://ui-avatars.com/api/?name=Tech+News&background=1D4ED8&color=fff',
+        name: 'Tech News India',
+        username: 'technewsindia',
+        avatar: 'https://ui-avatars.com/api/?name=Tech+News+India&background=1D4ED8&color=fff',
         isVerified: true
       },
       content: {
         type: 'video',
-        media: ['https://picsum.photos/400/600?random=2'],
-        caption: 'Breaking: New AI breakthrough changes everything! 🤖 What do you think about this development?',
+        media: ['https://picsum.photos/400/600?random=102'],
+        caption: 'Breaking: New startup unicorn from Bangalore! 🤖 What do you think about this development?',
       },
       engagement: {
         likes: 5678,

@@ -1,10 +1,6 @@
-// Purpose: This is for BACKEND API COMMUNICATION (Django backend)
-
-// ✅ Backend Integration: Handles communication with your Django backend server
-// ✅ Phone-based Auth: Contains the OLD phone/OTP authentication system
-// ✅ Profile Management: API calls for user profile operations
-// ✅ Token Management: Handles JWT tokens from Django backend
-// ⚠️ Currently Unused: Since we switched to Firebase email auth, this isn't being used for authentication anymore
+// API client for Django backend
+// Handles communication with Django REST API
+// Includes authentication, messaging, and user management
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 

@@ -16,7 +16,7 @@ export default function ChatSection() {
   const chatTabs = [
     { id: 'personal', label: 'Personal', icon: Phone },
     { id: 'groups', label: 'Groups', icon: Users },
-    { id: 'channels', label: 'Channels', icon: Radio },
+    { id: 'archive', label: 'Archive', icon: Radio },
   ]
 
   return (

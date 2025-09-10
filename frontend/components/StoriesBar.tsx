@@ -28,32 +28,32 @@ export default function StoriesBar() {
     {
       id: '1',
       user: {
-        name: 'Alice',
-        avatar: 'https://ui-avatars.com/api/?name=Alice&background=059669&color=fff'
+        name: 'Priya',
+        avatar: 'https://ui-avatars.com/api/?name=Priya&background=059669&color=fff'
       },
       hasNewStory: true
     },
     {
       id: '2',
       user: {
-        name: 'Bob',
-        avatar: 'https://ui-avatars.com/api/?name=Bob&background=DC2626&color=fff'
+        name: 'Rahul',
+        avatar: 'https://ui-avatars.com/api/?name=Rahul&background=DC2626&color=fff'
       },
       hasNewStory: true
     },
     {
       id: '3',
       user: {
-        name: 'Carol',
-        avatar: 'https://ui-avatars.com/api/?name=Carol&background=7C3AED&color=fff'
+        name: 'Kavya',
+        avatar: 'https://ui-avatars.com/api/?name=Kavya&background=7C3AED&color=fff'
       },
       hasNewStory: false
     },
     {
       id: '4',
       user: {
-        name: 'David',
-        avatar: 'https://ui-avatars.com/api/?name=David&background=EA580C&color=fff'
+        name: 'Arjun',
+        avatar: 'https://ui-avatars.com/api/?name=Arjun&background=EA580C&color=fff'
       },
       hasNewStory: true
     }
