@@ -13,11 +13,13 @@ export default function LayoutContent({ children }: { children: React.ReactNode 
       
       {/* Main content - Dynamic left margin based on sidebar state */}
       <main
-        className={`flex-1 h-full overflow-hidden transition-all duration-300 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 ${
+        className={`flex-1 h-full overflow-hidden transition-all duration-300 base-gradient ${
           isSidebarExpanded ? 'md:ml-64' : 'md:ml-16'
-        }`}
+        } pb-20 md:pb-0`}
       >
-        {children}
+        <div className="h-full flex flex-col">
+          {children}
+        </div>
       </main>
     </div>
   )

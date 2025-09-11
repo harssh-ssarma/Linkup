@@ -10,7 +10,7 @@ function ChatsContent() {
 
   return (
     <LayoutContent>
-      <div className="h-full bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="h-full">
         <ChatSection 
           activeChat={activeChat} 
           onChatChange={setActiveChat} 

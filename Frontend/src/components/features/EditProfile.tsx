@@ -59,7 +59,10 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'tween', duration: 0.3 }}
-      className="fixed inset-0 z-50 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex flex-col"
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{
+        background: 'linear-gradient(135deg, var(--surface-dark) 0%, var(--surface-main) 30%, var(--primary-950) 60%, var(--accent-950) 90%, var(--surface-dark) 100%)'
+      }}
     >
       {/* Header - No search and menu buttons */}
       <Header 
@@ -93,14 +96,14 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handlePhotoChange}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm font-medium"
+              className="btn-primary text-sm"
             >
               Change Photo
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handleRemovePhoto}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white text-sm font-medium"
+              className="px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-lg text-white text-sm font-medium transition-colors"
             >
               Remove
             </motion.button>
@@ -110,7 +113,7 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
         {/* Profile Details */}
         <div className="px-4 space-y-6">
           {/* Name Section */}
-          <div className="bg-white/10 rounded-xl p-4">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/60 text-sm">Name</span>
               <motion.button
@@ -137,7 +140,7 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
           </div>
 
           {/* About Section */}
-          <div className="bg-white/10 rounded-xl p-4">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/60 text-sm">About</span>
               <motion.button
@@ -163,7 +166,7 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
           </div>
 
           {/* Phone Section */}
-          <div className="bg-white/10 rounded-xl p-4">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-white/60 text-sm block mb-1">Phone</span>
@@ -174,7 +177,7 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
           </div>
 
           {/* Links Section */}
-          <div className="bg-white/10 rounded-xl p-4">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/60 text-sm">Links</span>
               <motion.button
@@ -188,7 +191,7 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
             
             <div className="space-y-3">
               {links.map((link) => (
-                <div key={link.id} className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
+                <div key={link.id} className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg border border-white/10">
                   <Link size={16} className="text-white/60" />
                   <div className="flex-1">
                     <p className="text-white font-medium text-sm">{link.title}</p>

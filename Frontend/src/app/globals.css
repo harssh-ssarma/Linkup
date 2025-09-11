@@ -2,67 +2,291 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Modern Gen Z Color System */
+:root {
+  /* Primary - Indigo Blue */
+  --primary: #6366f1;
+  --primary-light: #8b5cf6;
+  --primary-dark: #4338ca;
+  --primary-50: #f0f4ff;
+  --primary-900: #312e81;
+  --primary-950: #1e1b4b;
+
+  /* Accent - Soft Purple */
+  --accent: #8b5cf6;
+  --accent-light: #a78bfa;
+  --accent-dark: #7c3aed;
+  --accent-50: #faf5ff;
+  --accent-900: #581c87;
+  --accent-950: #3b0764;
+
+  /* Success - Keep for notifications */
+  --success: #10b981;
+  
+  /* Surfaces - Clean Dark */
+  --surface-dark: #0f0f17;
+  --surface-main: #1a1b23;
+  --surface-light: #252631;
+
+  /* Glass Effects */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-primary: rgba(99, 102, 241, 0.1);
+  --glass-accent: rgba(139, 92, 246, 0.1);
+  
+  /* Shadows */
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.3);
+}
+
 @layer base {
+  /* Hide scrollbars globally while keeping functionality */
   * {
-    @apply border-gray-200;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* * {
+    @apply border-gray-200;
+  } */
+  
   body {
-    @apply bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white min-h-screen;
+    background: linear-gradient(
+      135deg,
+      var(--surface-dark) 0%,
+      var(--surface-main) 30%,
+      var(--primary-950) 60%,
+      var(--accent-950) 90%,
+      var(--surface-dark) 100%
+    );
+    background-attachment: fixed;
+    @apply text-white min-h-screen antialiased;
+  }
+  
+  /* Better Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+  
+  /* Smooth Focus */
+  *:focus {
+    @apply outline-none;
+  }
+  
+  /* Button Focus Fix */
+  button:focus, 
+  button:focus-visible, 
+  a:focus, 
+  a:focus-visible {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Remove default button styling */
+  button {
+    border: none;
+    outline: none;
+    background: transparent;
   }
 }
 
 @layer components {
-  .glass-effect {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
-  }
-  
+  /* Glass Effects */
   .glass-card {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-xl;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-sm);
+    @apply rounded-2xl;
   }
   
-  .glass-card-dark {
-    @apply bg-black/20 backdrop-blur-md border border-white/10;
+  .glass-premium {
+    background: linear-gradient(135deg, var(--glass-bg), var(--glass-primary));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: var(--shadow-md), var(--shadow-glow);
+    @apply rounded-2xl;
   }
   
+  /* Chat Bubbles */
   .chat-bubble {
-    @apply rounded-2xl px-4 py-2 max-w-xs shadow-lg;
+    @apply rounded-3xl px-5 py-3 max-w-xs shadow-lg backdrop-blur-sm;
   }
   
   .chat-bubble-sent {
-    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white ml-auto;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    box-shadow: var(--shadow-sm);
+    @apply text-white ml-auto;
   }
   
   .chat-bubble-received {
-    @apply bg-gradient-to-r from-indigo-600/80 to-purple-600/80 text-white mr-auto backdrop-blur-sm border border-white/20;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    @apply text-white mr-auto;
   }
   
+  /* Buttons */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    box-shadow: var(--shadow-glow);
+    @apply px-6 py-3 rounded-2xl text-white font-medium hover:scale-105 transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    @apply px-6 py-3 rounded-2xl text-white font-medium hover:bg-white/10 transition-all duration-200;
+  }
+  
+  /* Floating Button */
   .floating-button {
-    @apply fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-transform duration-200;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    box-shadow: var(--shadow-lg);
+    @apply fixed bottom-6 right-6 w-16 h-16 rounded-2xl flex items-center justify-center text-white hover:scale-110 transition-transform duration-300;
   }
   
+  /* Professional Sidebar Items */
   .sidebar-item {
-    @apply flex items-center space-x-3 p-3 rounded-xl hover:bg-white/10 transition-all duration-200 cursor-pointer;
+    @apply flex items-center space-x-4 p-4 rounded-2xl hover:bg-white/5 transition-all duration-300 cursor-pointer group;
   }
   
+  .sidebar-item:hover {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    transform: translateX(4px);
+  }
+  
+  /* Input Fields */
   .message-input {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    @apply rounded-3xl px-6 py-4 text-white placeholder-white/60 focus:ring-2 focus:ring-primary-500/50 transition-all duration-200;
   }
   
-  .base-gradient {
-    @apply bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900;
+  /* Gradients */
+  .primary-gradient {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
   }
   
-  .base-gradient-light {
-    @apply bg-gradient-to-br from-indigo-500 to-purple-600;
+  .surface-gradient {
+    background: linear-gradient(135deg, var(--surface-main), var(--surface-light));
   }
   
-  .menu-gradient {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-600;
+  /* Professional Navigation */
+  .nav-item {
+    @apply relative p-3 rounded-2xl transition-all duration-300 hover:bg-white/5;
   }
   
+  .nav-item.active {
+    background: var(--glass-primary);
+    backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .nav-item.active::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    opacity: 0.1;
+  }
+  
+  /* Modern Scrollbars */
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+  }
+  
+  /* Stories Bar Animation - Ultra Fast & Smooth */
+  .stories-bar-hide {
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .stories-bar-show {
+    transform: translateY(0);
+    opacity: 1;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Immediate Response Animation */
+  .stories-instant {
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+  }
+  
+  /* Headers - High z-index for proper layering */
+  .header-gradient {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    position: relative;
+    z-index: 40;
+  }
+  
+  /* Header Premium Class */
+  .header-premium {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    position: relative;
+    z-index: 40;
+  }
+  
+  /* Clean Emoji Picker */
+  .emoji-picker-react {
+    background: transparent !important;
+    border: none !important;
+  }
+  
+  .emoji-picker-react .emoji-search {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    color: white !important;
+    margin: 12px !important;
+  }
+  
+  .emoji-picker-react .emoji-search::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  
+  /* Global Context Menu */
+  .context-menu {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-lg);
+    @apply rounded-2xl overflow-hidden z-50;
+  }
+  
+  .context-menu-item {
+    @apply w-full flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors text-left text-white;
+  }
+  
+  .context-menu-item:first-child {
+    @apply pt-4;
+  }
+  
+  .context-menu-item:last-child {
+    @apply pb-4;
+  }
+  
+  .context-menu-icon {
+    @apply w-5 h-5 text-white/80 flex-shrink-0;
+  }
+  
+  .context-menu-text {
+    @apply font-medium text-sm;
   }
 }
 
@@ -86,24 +310,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scrollbar Styles */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 3px;
+  height: 3px;
 }
 
 ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
-}
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Animations */
@@ -135,4 +368,89 @@ body {
 
 .animate-slide-in-left {
   animation: slideInLeft 0.3s ease-out;
+}
+
+/* Prevent layout shift on hover */
+* {
+  transform-style: preserve-3d;
+}
+
+/* Navigation specific fixes */
+.nav-item {
+  -webkit-tap-highlight-color: transparent !important;
+  tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  outline: none !important;
+  border: none !important;
+}
+
+.nav-item:focus,
+.nav-item:focus-visible,
+.nav-item:active,
+.nav-item:hover {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Mobile Navigation specific fixes */
+@media (max-width: 768px) {
+  .nav-item {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+}
+
+/* Emoji Picker - Mobile Optimized */
+.EmojiPickerReact {
+  --epr-bg-color: #1a1a1a !important;
+  --epr-category-label-bg-color: #1a1a1a !important;
+  --epr-picker-border-color: rgba(255, 255, 255, 0.1) !important;
+  --epr-search-input-bg-color: #2a2a2a !important;
+  --epr-category-navigation-button-color: rgba(255, 255, 255, 0.6) !important;
+  --epr-category-navigation-button-color-active: #6366f1 !important;
+  --epr-hover-bg-color: rgba(255, 255, 255, 0.1) !important;
+  --epr-focus-bg-color: rgba(255, 255, 255, 0.15) !important;
+  --epr-text-color: #ffffff !important;
+  --epr-search-input-text-color: #ffffff !important;
+  --epr-search-border-color: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(20px) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+  .EmojiPickerReact {
+    width: 280px !important;
+    height: 320px !important;
+  }
+}
+
+/* Desktop specific adjustments */
+@media (min-width: 769px) {
+  .EmojiPickerReact {
+    width: 320px !important;
+    height: 400px !important;
+  }
+}
+
+/* Fix emoji picker container */
+.emoji-picker-container {
+  position: relative;
+  z-index: 9999;
+}
+
+.emoji-picker-container .emoji-picker-react {
+  position: absolute !important;
+  bottom: 100% !important;
+  right: 0 !important;
+  margin-bottom: 8px !important;
+  transform: none !important;
 }

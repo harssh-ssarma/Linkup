@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Play, Camera, Users, Settings } from 'lucide-react'
 import Image from 'next/image'
 import StoriesBar from '@/components/features/StoriesBar'
 import Header from '@/components/layout/Header'
+import SettingsModal from '@/components/features/SettingsModal'
 
 interface Post {
   id: string
@@ -33,64 +34,160 @@ interface Post {
 }
 
 export default function FeedSection() {
-  const [feedTab, setFeedTab] = useState<'all' | 'friends' | 'trending'>('all')
+  const [feedTab, setFeedTab] = useState<'all'>('all')
+  const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [page, setPage] = useState(1)
+  const [showStoriesBar, setShowStoriesBar] = useState(true)
+  const [storiesOpacity, setStoriesOpacity] = useState(1)
+  const [storiesTranslateY, setStoriesTranslateY] = useState(0)
+  const [lastScrollY, setLastScrollY] = useState(0)
+  const observer = useRef<IntersectionObserver | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const lastPostElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMorePosts()
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [loading, hasMore])
   
   // Custom menu items for Feed section
   const feedMenuItems = [
     { icon: Camera, label: 'Create Post', action: () => console.log('Create Post') },
     { icon: Users, label: 'Find Friends', action: () => console.log('Find Friends') },
-    { icon: Settings, label: 'Feed Settings', action: () => console.log('Feed Settings') },
+    { icon: Settings, label: 'Feed Settings', action: () => { setSettingsSection('main'); setShowSettings(true) } },
+    { icon: Settings, label: 'Privacy Settings', action: () => { setSettingsSection('privacy'); setShowSettings(true) } },
+    { icon: Settings, label: 'Notification Settings', action: () => { setSettingsSection('notifications'); setShowSettings(true) } },
   ]
   
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: '1',
-      user: {
-        id: 'u1',
-        name: 'Priya Sharma',
-        username: 'priya_sharma',
-        avatar: 'https://ui-avatars.com/api/?name=Priya+Sharma&background=4F46E5&color=fff',
-        isVerified: true
-      },
-      content: {
-        type: 'photo',
-        media: ['https://picsum.photos/400/600?random=101'],
-        caption: 'Beautiful sunset at Marina Beach! 🌅 #sunset #beach #chennai',
-        location: 'Marina Beach, Chennai'
-      },
-      engagement: {
-        likes: 1234,
-        comments: 89,
-        shares: 23,
-        isLiked: false,
-        isSaved: false
-      },
-      timestamp: '2h ago'
-    },
-    {
-      id: '2',
-      user: {
-        id: 'u2',
-        name: 'Tech News India',
-        username: 'technewsindia',
-        avatar: 'https://ui-avatars.com/api/?name=Tech+News+India&background=1D4ED8&color=fff',
-        isVerified: true
-      },
-      content: {
-        type: 'video',
-        media: ['https://picsum.photos/400/600?random=102'],
-        caption: 'Breaking: New startup unicorn from Bangalore! 🤖 What do you think about this development?',
-      },
-      engagement: {
-        likes: 5678,
-        comments: 234,
-        shares: 156,
-        isLiked: true,
-        isSaved: true
-      },
-      timestamp: '4h ago'
+  // Generate mock posts data
+  const generateMockPosts = (startId: number, count: number): Post[] => {
+    const mockUsers = [
+      { name: 'Priya Sharma', username: 'priya_dev', isVerified: true },
+      { name: 'Rahul Kumar', username: 'rahul_tech', isVerified: false },
+      { name: 'Kavya Patel', username: 'kavya_design', isVerified: true },
+      { name: 'Arjun Singh', username: 'arjun_founder', isVerified: true },
+      { name: 'Neha Gupta', username: 'neha_writer', isVerified: false },
+      { name: 'Siddharth Roy', username: 'sid_coder', isVerified: true },
+    ]
+
+    const mockCaptions = [
+      'Beautiful sunset from my terrace! What a day 🌅',
+      'Breaking: New startup unicorn from Bangalore! 🤖 What do you think about this development?',
+      'Coffee and code - perfect Sunday vibes ☕️💻',
+      'Just finished my morning workout! Feeling energized 💪',
+      'Amazing street food in Delhi! Best chaat ever 🍜',
+      'New design project completed. Excited to share! 🎨',
+      'Weekend getaway to Goa was absolutely fantastic 🏖️',
+      'Learning something new every day! Currently diving into AI 🤖',
+    ]
+
+    return Array.from({ length: count }, (_, i) => {
+      const postId = startId + i
+      const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)]
+      const randomCaption = mockCaptions[Math.floor(Math.random() * mockCaptions.length)]
+      
+      return {
+        id: postId.toString(),
+        user: {
+          id: `u${postId}`,
+          name: randomUser.name,
+          username: randomUser.username,
+          avatar: `https://ui-avatars.com/api/?name=${randomUser.name.replace(' ', '+')}&background=${Math.floor(Math.random()*16777215).toString(16)}&color=fff`,
+          isVerified: randomUser.isVerified
+        },
+        content: {
+          type: Math.random() > 0.7 ? 'video' : 'photo',
+          media: [`https://picsum.photos/400/600?random=${postId + 100}`],
+          caption: randomCaption,
+          location: Math.random() > 0.5 ? ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata'][Math.floor(Math.random() * 5)] : undefined
+        },
+        engagement: {
+          likes: Math.floor(Math.random() * 10000) + 100,
+          comments: Math.floor(Math.random() * 500) + 10,
+          shares: Math.floor(Math.random() * 200) + 5,
+          isLiked: Math.random() > 0.7,
+          isSaved: Math.random() > 0.8
+        },
+        timestamp: ['2m ago', '15m ago', '1h ago', '3h ago', '1d ago'][Math.floor(Math.random() * 5)]
+      }
+    })
+  }
+
+  const [posts, setPosts] = useState<Post[]>(() => generateMockPosts(1, 5))
+  const [showSettings, setShowSettings] = useState(false)
+  const [settingsSection, setSettingsSection] = useState<'main' | 'account' | 'privacy' | 'notifications' | 'storage' | 'help'>('main')
+
+  // Load more posts function
+  const loadMorePosts = useCallback(async () => {
+    if (loading || !hasMore) return
+    
+    setLoading(true)
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    const newPosts = generateMockPosts(posts.length + 1, 3)
+    
+    setPosts(prevPosts => [...prevPosts, ...newPosts])
+    setPage(prevPage => prevPage + 1)
+    
+    // Simulate end of posts after 50 posts
+    if (posts.length >= 47) {
+      setHasMore(false)
     }
-  ])
+    
+    setLoading(false)
+  }, [loading, hasMore, posts.length])
+
+  // Reset posts when tab changes
+  useEffect(() => {
+    setPosts(generateMockPosts(1, 5))
+    setPage(1)
+    setHasMore(true)
+    setShowStoriesBar(true)
+    setStoriesOpacity(1)
+    setStoriesTranslateY(0)
+  }, [feedTab])
+
+  // Progressive scroll-based animation for stories bar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollContainerRef.current) return
+      
+      const currentScrollY = scrollContainerRef.current.scrollTop
+      const maxHideDistance = 120 // Distance over which to hide completely
+      
+      // Calculate progressive opacity and translateY based on scroll
+      if (currentScrollY <= maxHideDistance) {
+        // Progressive animation zone
+        const progress = Math.min(currentScrollY / maxHideDistance, 1)
+        const newOpacity = Math.max(1 - progress, 0)
+        const newTranslateY = -progress * 50 // Move up by 50px max
+        
+        setStoriesOpacity(newOpacity)
+        setStoriesTranslateY(newTranslateY)
+        setShowStoriesBar(newOpacity > 0.1) // Keep visible until almost fully transparent
+      } else {
+        // Fully hidden
+        setStoriesOpacity(0)
+        setStoriesTranslateY(-50)
+        setShowStoriesBar(false)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+
+    const scrollContainer = scrollContainerRef.current
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+      return () => scrollContainer.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   const handleLike = (postId: string) => {
     setPosts(posts.map(post => 
@@ -130,56 +227,49 @@ export default function FeedSection() {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <Header 
-        tabTitle="Feed"
-        currentTab={feedTab}
-        menuItems={feedMenuItems}
-      />
-
-      {/* Feed Tabs */}
-      <div className="px-4 py-3 border-b border-white/20">
-        <div className="flex space-x-1 bg-white/5 rounded-lg p-1">
-          {[
-            { id: 'all', label: 'All' },
-            { id: 'friends', label: 'Friends' },
-            { id: 'trending', label: 'Trending' }
-          ].map((tab) => {
-            const isActive = feedTab === tab.id
-            
-            return (
-              <motion.button
-                key={tab.id}
-                onClick={() => setFeedTab(tab.id as any)}
-                className={`flex-1 py-2 px-4 rounded-md transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-blue-500/30 text-blue-300' 
-                    : 'text-white/60 hover:text-white hover:bg-white/10'
-                }`}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span className="text-sm font-medium">{tab.label}</span>
-              </motion.button>
-            )
-          })}
-        </div>
+    <div className="h-full flex flex-col relative">
+      {/* Header - Fixed at top with higher z-index */}
+      <div className="relative z-30">
+        <Header 
+          tabTitle="Feed"
+          currentTab={feedTab}
+          menuItems={feedMenuItems}
+        />
       </div>
 
-      {/* Stories Bar */}
-      <StoriesBar />
+      {/* Stories Bar with Progressive Scroll Animation */}
+      <motion.div
+        style={{
+          opacity: storiesOpacity,
+          transform: `translateY(${storiesTranslateY}px)`,
+          height: storiesOpacity > 0.1 ? 'auto' : '0px',
+          overflow: 'hidden',
+          width: '100%',
+          transition: 'height 0.1s ease-out'
+        }}
+        className="relative z-10"
+      >
+        <StoriesBar />
+      </motion.div>
 
       {/* Posts Feed */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto">
-          {posts.map((post, index) => (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="glass-effect border border-white/10 rounded-2xl mb-6 overflow-hidden"
-            >
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto scrollbar-hide"
+      >
+        <div className="max-w-2xl mx-auto px-4">
+          {posts.map((post, index) => {
+            const isLastPost = index === posts.length - 1
+            
+            return (
+              <motion.div
+                key={post.id}
+                ref={isLastPost ? lastPostElementRef : null}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="glass-effect rounded-2xl mb-6 overflow-hidden"
+              >
               {/* Post Header */}
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -317,9 +407,42 @@ export default function FeedSection() {
                 )}
               </div>
             </motion.div>
-          ))}
+            )
+          })}
+          
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="flex justify-center py-8">
+              <div className="glass-card p-4 rounded-2xl">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <span className="text-white/80 text-sm">Loading...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* End of Posts */}
+          {!hasMore && posts.length > 0 && (
+            <div className="flex justify-center py-8">
+              <div className="glass-card p-4 rounded-2xl">
+                <span className="text-white/60 text-sm">You've reached the end! 🎉</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSignOut={() => {
+          setShowSettings(false)
+          // Handle sign out
+        }}
+        initialSection={settingsSection}
+      />
     </div>
   )
 }

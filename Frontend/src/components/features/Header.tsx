@@ -40,7 +40,7 @@ export default function ChatHeader({
   return (
     <div className="relative">
       {/* Header Bar - Mobile First */}
-      <div className="menu-gradient px-4 py-3 sm:px-6 sm:py-4 border-b border-indigo-600/50">
+      <div className="menu-gradient px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Left side - Dynamic Title with Count */}
           <div className="flex items-center space-x-3">
@@ -102,7 +102,7 @@ export default function ChatHeader({
                   placeholder="Search chats..."
                   value={searchQuery}
                   onChange={(e) => onSearchChange?.(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-indigo-500/50 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/20 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/20 transition-all"
                   autoFocus
                 />
               </div>
@@ -126,7 +126,7 @@ export default function ChatHeader({
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className="absolute right-4 sm:right-6 top-full mt-2 w-48 sm:w-52 menu-gradient rounded-xl shadow-2xl border border-white/20 z-50 overflow-hidden"
+              className="absolute right-4 sm:right-6 top-full mt-2 w-48 sm:w-52 context-menu"
             >
               {menuItems.map((item, index) => {
                 const Icon = item.icon
@@ -140,10 +140,10 @@ export default function ChatHeader({
                       item.action()
                       setShowMenu(false)
                     }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 sm:px-5 sm:py-4 hover:bg-white/10 transition-colors text-left"
+                    className="context-menu-item"
                   >
-                    <Icon className="w-5 h-5 text-white/80" />
-                    <span className="text-white font-medium text-sm sm:text-base">
+                    <Icon className="context-menu-icon" />
+                    <span className="context-menu-text">
                       {item.label}
                     </span>
                   </motion.button>

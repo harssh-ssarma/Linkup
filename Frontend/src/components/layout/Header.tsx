@@ -47,6 +47,7 @@ interface HeaderProps {
   currentTab?: string
   chatCount?: number
   onNewChatClick?: () => void
+  onTitleClick?: () => void
 }
 
 export default function Header({ 
@@ -81,7 +82,8 @@ export default function Header({
   tabTitle,
   currentTab = 'personal',
   chatCount = 0,
-  onNewChatClick
+  onNewChatClick,
+  onTitleClick
 }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [showUniversalSearch, setShowUniversalSearch] = useState(false)
@@ -149,7 +151,7 @@ export default function Header({
   return (
     <div className="relative">
       {/* Header Bar - Mobile First with Navigation-like Background */}
-      <div className="bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 border-b border-white/20 px-4 py-3 sm:px-6 sm:py-4 shadow-lg">
+      <div className="header-premium px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Left side - Back Button + Search Bar OR Title */}
           <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -172,17 +174,33 @@ export default function Header({
                   value={universalSearchQuery}
                   onChange={(e) => handleUniversalSearch(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                  className="w-full bg-white/10 rounded-full px-4 py-2 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   autoFocus
                 />
               </div>
             ) : (
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg sm:text-xl font-semibold text-white truncate">{displayTitle}</h1>
-                {displaySubtitle && (
-                  <p className="text-xs sm:text-sm text-white/70 truncate">
-                    {displaySubtitle}
-                  </p>
+                {onTitleClick ? (
+                  <button 
+                    onClick={onTitleClick}
+                    className="text-left w-full hover:opacity-80 transition-opacity"
+                  >
+                    <h1 className="text-lg sm:text-xl font-semibold text-white truncate">{displayTitle}</h1>
+                    {displaySubtitle && (
+                      <p className="text-xs sm:text-sm text-white/70 truncate">
+                        {displaySubtitle}
+                      </p>
+                    )}
+                  </button>
+                ) : (
+                  <>
+                    <h1 className="text-lg sm:text-xl font-semibold text-white truncate">{displayTitle}</h1>
+                    {displaySubtitle && (
+                      <p className="text-xs sm:text-sm text-white/70 truncate">
+                        {displaySubtitle}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -264,7 +282,7 @@ export default function Header({
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className="absolute right-4 sm:right-6 top-full mt-2 w-48 sm:w-52 menu-gradient rounded-xl shadow-2xl border border-white/20 z-50 overflow-hidden"
+              className="absolute right-4 sm:right-6 top-full mt-2 w-48 sm:w-52 context-menu"
             >
               {activeMenuItems.map((item, index) => {
                 const Icon = item.icon
@@ -278,10 +296,10 @@ export default function Header({
                       item.action()
                       setShowMenu(false)
                     }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 sm:px-5 sm:py-4 hover:bg-white/10 transition-colors text-left"
+                    className="context-menu-item"
                   >
-                    <Icon className="w-5 h-5 text-white/80" />
-                    <span className="text-white font-medium text-sm sm:text-base">
+                    <Icon className="context-menu-icon" />
+                    <span className="context-menu-text">
                       {item.label}
                     </span>
                   </motion.button>

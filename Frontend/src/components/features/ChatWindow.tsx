@@ -15,10 +15,14 @@ import {
   Check,
   CheckCheck,
   Bell,
-  Star
+  Star,
+  Shield,
+  Settings
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import Header from '@/components/layout/Header'
+import ContactProfile from '@/components/features/ContactProfile'
+import SettingsModal from '@/components/features/SettingsModal'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
@@ -81,8 +85,20 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
+  const [showContactProfile, setShowContactProfile] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [settingsSection, setSettingsSection] = useState<'main' | 'account' | 'privacy' | 'notifications' | 'storage' | 'help'>('main')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+    }
+  }, [newMessage])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -144,6 +160,34 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
     )
   }
 
+  // Sample contact data
+  const contactData = {
+    id: chat?.id || '1',
+    name: chat?.name || 'Unknown',
+    phone: '+1 234 567 8900',
+    avatar: chat?.avatar || 'https://ui-avatars.com/api/?name=Unknown&background=6366f1&color=fff',
+    isOnline: chat?.isOnline || false,
+    lastSeen: 'Last seen 2 hours ago',
+    bio: 'Hey there! I am using Linkup.',
+    isVerified: true,
+    isMuted: false,
+    isBlocked: false,
+    isStarred: false,
+    email: 'john@example.com',
+    location: 'New York, USA',
+    website: 'https://johndoe.com',
+    joinedDate: 'January 2023'
+  }
+
+  if (showContactProfile) {
+    return (
+      <ContactProfile 
+        contact={contactData}
+        onBack={() => setShowContactProfile(false)}
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col h-full base-gradient text-white">
       {/* WhatsApp-style Header */}
@@ -158,10 +202,13 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
         ]}
         menuItems={[
           { icon: Bot, label: 'AI Assistant', action: () => setShowAIAssistant(!showAIAssistant) },
-          { icon: MoreVertical, label: 'View Contact', action: () => console.log('View Contact') },
+          { icon: MoreVertical, label: 'View Contact', action: () => setShowContactProfile(true) },
           { icon: Star, label: 'Add to Favorites', action: () => console.log('Add to Favorites') },
-          { icon: Bell, label: 'Mute Notifications', action: () => console.log('Mute') },
+          { icon: Bell, label: 'Mute Notifications', action: () => { setSettingsSection('notifications'); setShowSettings(true) } },
+          { icon: Shield, label: 'Privacy Settings', action: () => { setSettingsSection('privacy'); setShowSettings(true) } },
+          { icon: Settings, label: 'Chat Settings', action: () => { setSettingsSection('main'); setShowSettings(true) } },
         ]}
+        onTitleClick={() => setShowContactProfile(true)}
       />
 
       {/* Messages */}
@@ -180,7 +227,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
                 message.sender === 'me' 
                   ? 'chat-bubble-sent text-white' 
                   : message.sender === 'ai'
-                  ? 'menu-gradient text-white'
+                  ? 'accent-gradient text-white glass-card-premium'
                   : 'chat-bubble-received text-white backdrop-blur-sm'
               }`}>
                 {message.sender === 'ai' && (
@@ -256,78 +303,117 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
         )}
       </AnimatePresence>
 
-      {/* Message Input */}
+      {/* WhatsApp-style Message Input */}
       <motion.div 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="flex-shrink-0 glass-effect border-t border-white/20 p-3 sm:p-4"
+        className="relative flex-shrink-0 glass-effect border-t border-white/20 p-3 sm:p-4"
       >
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex items-end space-x-2 sm:space-x-3">
+          {/* Attachment Button */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
+            className="p-2.5 rounded-full glass-card hover:bg-white/10 transition-colors text-white/60 hover:text-white flex-shrink-0"
           >
-            <Paperclip size={18} className="sm:w-5 sm:h-5" />
+            <Paperclip size={20} />
           </motion.button>
           
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
-              className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent text-sm sm:text-base pr-12"
-            />
-            
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
-            >
-              <Smile size={18} className="sm:w-5 sm:h-5" />
-            </motion.button>
+          {/* Message Input Container */}
+          <div className="flex-1 relative min-h-[44px] flex items-center">
+            <div className="w-full relative">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
+                rows={1}
+                style={{ height: 'auto', minHeight: '44px', maxHeight: '120px' }}
+                className="w-full message-input text-sm sm:text-base resize-none pr-12 py-3 leading-5"
+              />
+              
+              {/* Emoji Button inside input */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+              >
+                <Smile size={20} />
+              </motion.button>
+            </div>
           </div>
           
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10"
-          >
-            <Mic size={18} className="sm:w-5 sm:h-5" />
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={sendMessage}
-            className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white shadow-lg"
-          >
-            <Send size={18} className="sm:w-5 sm:h-5" />
-          </motion.button>
+          {/* Send/Mic Button - WhatsApp Style */}
+          {newMessage.trim() ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={sendMessage}
+              className="p-3 rounded-full btn-primary shadow-lg flex-shrink-0 min-w-[48px] min-h-[48px] flex items-center justify-center"
+            >
+              <Send size={20} className="ml-0.5" />
+            </motion.button>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 rounded-full glass-card hover:bg-white/10 transition-colors text-white/60 hover:text-white flex-shrink-0 min-w-[48px] min-h-[48px] flex items-center justify-center"
+            >
+              <Mic size={20} />
+            </motion.button>
+          )}
         </div>
         
-        {/* Emoji Picker */}
+        {/* Simple Clean Emoji Picker */}
         <AnimatePresence>
           {showEmojiPicker && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-16 sm:bottom-20 right-4"
-            >
-              <EmojiPicker
-                onEmojiClick={(emojiData) => {
-                  setNewMessage(prev => prev + emojiData.emoji)
-                  setShowEmojiPicker(false)
-                }}
+            <div className="fixed inset-0 z-50 flex items-end justify-center">
+              {/* Backdrop */}
+              <div 
+                className="absolute inset-0 bg-black/20" 
+                onClick={() => setShowEmojiPicker(false)}
               />
-            </motion.div>
+              
+              {/* Emoji Picker */}
+              <motion.div
+                initial={{ y: 300, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 300, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="relative mb-20 mx-4 rounded-2xl overflow-hidden"
+                style={{
+                  background: '#1a1b23',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)'
+                }}
+              >
+                <EmojiPicker
+                  onEmojiClick={(emojiData) => {
+                    setNewMessage(prev => prev + emojiData.emoji)
+                    setShowEmojiPicker(false)
+                  }}
+                  width={320}
+                  height={420}
+                  skinTonesDisabled
+                  searchDisabled={false}
+                />
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSignOut={() => {
+          setShowSettings(false)
+          // Handle sign out
+        }}
+        initialSection={settingsSection}
+      />
     </div>
   )
 }

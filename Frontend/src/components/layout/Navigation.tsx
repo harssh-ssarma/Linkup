@@ -30,7 +30,7 @@ export default function Navigation() {
     <>
       {/* Desktop Navigation - Left Sidebar */}
       <motion.nav 
-        className={`hidden md:flex fixed left-0 top-0 bottom-0 bg-gradient-to-b from-purple-900 via-blue-900 to-indigo-900 border-r border-white/20 z-40 flex-col overflow-hidden shadow-xl`}
+        className={`hidden md:flex fixed left-0 top-0 bottom-0 nav-premium z-40 flex-col overflow-hidden`}
         initial={false}
         animate={{ 
           width: isSidebarExpanded ? 256 : 64,
@@ -41,7 +41,7 @@ export default function Navigation() {
         }}
       >
         {/* Header with Logo and Toggle */}
-        <div className={`flex items-center p-4 border-b border-white/10 ${isSidebarExpanded ? 'justify-between' : 'justify-center'}`}>
+        <div className={`flex items-center p-4 ${isSidebarExpanded ? 'justify-between' : 'justify-center'}`}>
           <motion.div 
             className="flex items-center space-x-3 overflow-hidden"
             initial={false}
@@ -84,10 +84,10 @@ export default function Navigation() {
           
           <motion.button
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-            className={`p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors ${
+            className={`p-2 rounded-2xl glass-card-premium text-white hover:scale-105 transition-all duration-200 ${
               isSidebarExpanded 
                 ? '' 
-                : 'fixed left-4 top-4 shadow-lg z-50'
+                : 'fixed left-4 top-4 z-50'
             }`}
             whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.05 }}
@@ -110,13 +110,14 @@ export default function Navigation() {
             return (
               <Link key={tab.id} href={tab.href} className="block mb-2 px-2">
                 <button
-                  className={`relative flex items-center w-full rounded-xl transition-all duration-200 ${
+                  className={`relative flex items-center w-full rounded-xl transition-all duration-200 focus:outline-none focus:ring-0 focus:border-0 ${
                     isSidebarExpanded ? 'px-4 py-3' : 'w-12 h-12 justify-center mx-auto'
                   } ${
                     isActive 
                       ? 'bg-white/20 text-white' 
                       : 'text-white/60 hover:text-white hover:bg-white/10'
                   }`}
+                  style={{ outline: 'none', border: 'none' }}
                 >
                   {/* Icon */}
                   <div className="relative">
@@ -124,7 +125,7 @@ export default function Navigation() {
                     
                     {/* Notification Badge */}
                     {tab.badge && (
-                      <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-lg">
                         {tab.badge}
                       </div>
                     )}
@@ -156,7 +157,7 @@ export default function Navigation() {
 
       {/* Mobile Navigation - Bottom */}
       {showMobileNavigation && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 border-t border-white/20 z-50 shadow-lg h-20">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 nav-premium z-50 h-20">
           <div className="flex items-center justify-between px-2 py-3 h-full">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id
@@ -166,11 +167,12 @@ export default function Navigation() {
                 <Link key={tab.id} href={tab.href}>
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    className={`relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 py-2 rounded-lg flex-1 mx-1 ${
+                    className={`relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 py-2 rounded-2xl flex-1 mx-1 focus:outline-none focus:ring-0 focus:border-0 ${
                       isActive 
-                        ? 'text-white bg-white/20' 
-                        : 'text-white/60 hover:text-white hover:bg-white/10'
+                        ? 'text-white nav-item active' 
+                        : 'text-white/60 hover:text-white nav-item'
                     }`}
+                    style={{ outline: 'none', border: 'none' }}
                   >
                     {/* Icon */}
                     <div className="relative">
@@ -178,7 +180,7 @@ export default function Navigation() {
                       
                       {/* Notification Badge */}
                       {tab.badge && (
-                        <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-lg">
                           {tab.badge}
                         </div>
                       )}

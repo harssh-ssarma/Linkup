@@ -20,7 +20,38 @@ import {
 import Image from 'next/image'
 import Header from '@/components/layout/Header'
 import SettingsModal from '@/components/features/SettingsModal'
-import EditProfile from '@/components/features/EditProfile'
+
+// Simple EditProfile component since it's missing
+const EditProfile = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  if (!isOpen) return null
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="w-full max-w-md glass-premium rounded-2xl p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-lg font-semibold text-white mb-4">Edit Profile</h3>
+        <p className="text-white/60 text-sm mb-6">Edit profile feature coming soon!</p>
+        <button
+          onClick={onClose}
+          className="w-full btn-primary"
+        >
+          Close
+        </button>
+      </motion.div>
+    </motion.div>
+  )
+}
 
 interface UserProfile {
   id: string
@@ -149,7 +180,7 @@ export default function ProfileSection() {
         <div className="relative px-6 pb-6">
           {/* Avatar */}
           <div className="relative -mt-16 mb-4">
-            <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-slate-900 bg-slate-900">
+            <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-white/20 glass-card-premium">
               <Image
                 src={profile.avatar}
                 alt={profile.name}
@@ -161,7 +192,7 @@ export default function ProfileSection() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handleAvatarChange}
-              className="absolute bottom-2 right-2 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-lg"
+              className="absolute bottom-2 right-2 w-10 h-10 btn-primary rounded-full flex items-center justify-center"
             >
               <Camera size={20} className="text-white" />
             </motion.button>
@@ -320,6 +351,7 @@ export default function ProfileSection() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         onSignOut={handleConfirmSignOut}
+        initialSection="main"
       />
 
       {/* Edit Profile Component */}

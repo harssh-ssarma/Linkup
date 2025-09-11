@@ -104,7 +104,7 @@ export default function CreateSection() {
                         setActiveCreate(option.id)
                       }
                     }}
-                    className="glass-effect border border-white/20 rounded-2xl p-6 cursor-pointer hover:border-white/40 transition-all group"
+                    className="glass-card-premium cursor-pointer hover:scale-105 transition-all group"
                   >
                     <div className="flex items-center space-x-4">
                       <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${option.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
@@ -135,7 +135,7 @@ export default function CreateSection() {
                     <motion.button
                       key={action.id}
                       whileTap={{ scale: 0.95 }}
-                      className="flex flex-col items-center space-y-2 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                      className="btn-secondary text-sm flex flex-col items-center space-y-2"
                     >
                       <Icon size={24} className="text-white/80" />
                       <span className="text-sm text-white/80">{action.label}</span>

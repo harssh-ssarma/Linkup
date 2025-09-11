@@ -61,6 +61,7 @@ export default function StoriesBar() {
 
   return (
     <div className="border-b border-white/10 p-4">
+      {/* Stories Section */}
       <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
         {stories.map((story, index) => (
           <motion.div

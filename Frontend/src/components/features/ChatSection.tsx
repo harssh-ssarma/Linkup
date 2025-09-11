@@ -132,7 +132,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   ]
 
   return (
-    <div className={`h-full flex base-gradient ${activeChat ? '' : 'pb-20 md:pb-0'}`}>
+    <div className={`h-full flex chat-container-premium ${activeChat ? '' : 'pb-20 md:pb-0'}`}>
       {/* Mobile: Stacked Layout */}
       <div className="flex flex-col md:flex-row w-full h-full">
         
@@ -143,7 +143,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
           activeChat 
             ? 'w-full md:w-1/3 lg:w-[400px] xl:w-[420px]' 
             : 'w-full'
-        } backdrop-blur-lg ${activeChat ? 'border-r border-indigo-600/50' : ''} flex-col`}>
+        } glass-card-premium ${activeChat ? 'border-r border-white/10' : ''} flex-col`}>
           
           {/* Header */}
           <Header 
@@ -170,10 +170,10 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
                   <motion.button
                     key={tab.id}
                     onClick={() => setChatTab(tab.id as any)}
-                    className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 py-2 sm:py-3 px-2 sm:px-4 rounded-md transition-all duration-200 text-xs sm:text-sm ${
+                    className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 py-2 sm:py-3 px-2 sm:px-4 rounded-2xl transition-all duration-200 text-xs sm:text-sm ${
                       isActive 
-                        ? 'bg-white/20 text-white shadow-md' 
-                        : 'text-white/60 hover:text-white hover:bg-white/10'
+                        ? 'glass-card-premium text-white nav-item active' 
+                        : 'text-white/60 hover:text-white nav-item'
                     }`}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -199,7 +199,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
         </div>
 
         {/* Right Pane - Chat Window */}
-        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} flex-1`}>
+        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} ${activeChat ? 'fixed inset-0 z-50 md:relative md:z-auto' : ''} flex-1`}>
           {activeChat ? (
             <ChatWindow 
               chat={chats.find(chat => chat.id === activeChat)} 
@@ -221,7 +221,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowNewChat(true)}
-                  className="px-6 sm:px-8 py-3 sm:py-4 menu-gradient rounded-xl sm:rounded-2xl text-white font-semibold shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 sm:space-x-3 mx-auto text-sm sm:text-lg touch-manipulation"
+                  className="btn-primary text-sm sm:text-lg touch-manipulation flex items-center space-x-2 sm:space-x-3 mx-auto"
                 >
                   <Plus size={18} className="sm:w-5 sm:h-5" />
                   <span>Start New Chat</span>

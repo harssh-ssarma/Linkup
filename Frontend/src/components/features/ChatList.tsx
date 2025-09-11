@@ -128,7 +128,7 @@ function LongPressMenu({ chat, isOpen, onClose, position }: LongPressMenuProps) 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="fixed z-50 menu-gradient rounded-xl shadow-2xl border border-white/20 py-2 min-w-[180px]"
+        className="fixed context-menu min-w-[180px]"
         style={{
           left: Math.min(position.x, window.innerWidth - 200),
           top: Math.min(position.y, window.innerHeight - 300)
@@ -146,12 +146,12 @@ function LongPressMenu({ chat, isOpen, onClose, position }: LongPressMenuProps) 
                 item.action()
                 onClose()
               }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors text-left ${
-                item.danger ? 'text-red-300' : 'text-white'
+              className={`context-menu-item ${
+                item.danger ? 'text-red-300 hover:text-red-200' : ''
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span className="text-sm font-medium">{item.label}</span>
+              <Icon className="context-menu-icon" />
+              <span className="context-menu-text">{item.label}</span>
             </motion.button>
           )
         })}

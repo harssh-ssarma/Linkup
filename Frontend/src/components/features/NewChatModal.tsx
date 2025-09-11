@@ -117,7 +117,10 @@ export default function NewChatModal({ isOpen, onClose, onChatCreated }: NewChat
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'tween', duration: 0.3 }}
-        className="fixed inset-0 z-50 base-gradient flex flex-col"
+        className="fixed inset-0 z-50 flex flex-col"
+        style={{
+          background: 'linear-gradient(135deg, var(--surface-dark) 0%, var(--surface-main) 30%, var(--primary-950) 60%, var(--accent-950) 90%, var(--surface-dark) 100%)'
+        }}
       >
         {/* Header with universal search */}
         <Header

@@ -43,6 +43,7 @@ interface SettingsModalProps {
   isOpen: boolean
   onClose: () => void
   onSignOut?: () => void
+  initialSection?: SettingsSection
 }
 
 type SettingsSection = 
@@ -53,7 +54,7 @@ type SettingsSection =
   | 'storage' 
   | 'help'
 
-export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, onSignOut, initialSection = 'main' }: SettingsModalProps) {
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main')
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
