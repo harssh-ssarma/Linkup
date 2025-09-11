@@ -15,16 +15,11 @@ import {
   LogOut,
   Heart,
   User,
-  Shield,
-  Bell,
-  Moon,
-  Globe,
-  Lock,
-  ChevronRight,
   Eye
 } from 'lucide-react'
 import Image from 'next/image'
 import Header from '@/components/layout/Header'
+import SettingsModal from '@/components/features/SettingsModal'
 
 interface UserProfile {
   id: string
@@ -312,118 +307,11 @@ export default function ProfileSection() {
       </div>
 
       {/* Settings Modal */}
-      <AnimatePresence>
-        {showSettings && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowSettings(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", duration: 0.3 }}
-              className="bg-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/10 w-full max-w-2xl mx-auto max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                {/* Settings Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">Settings</h3>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowSettings(false)}
-                    className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    ✕
-                  </motion.button>
-                </div>
-                
-                {/* Settings Categories */}
-                <div className="space-y-4 mb-6">
-                  {[
-                    {
-                      icon: Shield,
-                      title: 'Privacy & Security',
-                      subtitle: 'Control your privacy settings',
-                      color: 'from-green-500 to-emerald-500'
-                    },
-                    {
-                      icon: Bell,
-                      title: 'Notifications',
-                      subtitle: 'Manage notification preferences',
-                      color: 'from-orange-500 to-red-500'
-                    },
-                    {
-                      icon: Moon,
-                      title: 'Appearance',
-                      subtitle: 'Customize app appearance',
-                      color: 'from-purple-500 to-pink-500'
-                    },
-                    {
-                      icon: Globe,
-                      title: 'Language & Region',
-                      subtitle: 'Set your language preferences',
-                      color: 'from-indigo-500 to-purple-500'
-                    },
-                    {
-                      icon: Lock,
-                      title: 'Account Security',
-                      subtitle: 'Two-factor auth, password',
-                      color: 'from-red-500 to-orange-500'
-                    }
-                  ].map((category, index) => {
-                    const Icon = category.icon
-                    return (
-                      <motion.div
-                        key={index}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="glass-effect p-4 rounded-xl cursor-pointer transition-colors hover:bg-white/10"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`p-3 bg-gradient-to-r ${category.color} rounded-xl`}>
-                            <Icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-white">
-                              {category.title}
-                            </h4>
-                            <p className="text-sm text-white/60">
-                              {category.subtitle}
-                            </p>
-                          </div>
-                          <ChevronRight className="w-5 h-5 text-white/40" />
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-
-                {/* Account Actions - Sign Out */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass-effect rounded-xl p-6 border border-red-500/20"
-                >
-                  <h3 className="text-lg font-semibold text-white mb-4">Account Actions</h3>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleSignOutClick}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors"
-                  >
-                    <LogOut size={20} />
-                    <span>Sign Out</span>
-                  </motion.button>
-                </motion.div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSignOut={handleConfirmSignOut}
+      />
 
       {/* Edit Profile Modal */}
       <AnimatePresence>

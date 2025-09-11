@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { auth } from '@/lib/firebase'
 import { signOut } from 'firebase/auth'
 import { 
-  ArrowLeft, 
   User, 
   Shield, 
   Bell, 
@@ -28,12 +27,16 @@ import {
   Smartphone,
   Radio,
   Archive,
-  QrCode,
   Users,
+  Mail,
   Heart,
-  Info
+  Info,
+  QrCode,
+  Share,
+  RotateCcw,
+  Scan
 } from 'lucide-react'
-import Image from 'next/image'
+import Header from '@/components/layout/Header'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -53,6 +56,8 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main')
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showQRCode, setShowQRCode] = useState(false)
+  const [qrCodeMode, setQRCodeMode] = useState<'my-code' | 'scan-code'>('my-code')
   
   const [settings, setSettings] = useState({
     // Privacy Settings
@@ -100,8 +105,48 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
     handleSignOut()
   }
 
+  const handleQRCodeAction = (action: string) => {
+    switch(action) {
+      case 'my-code':
+        setQRCodeMode('my-code')
+        setShowQRCode(true)
+        break
+      case 'scan-code':
+        setQRCodeMode('scan-code') 
+        setShowQRCode(true)
+        break
+      case 'share':
+        console.log('Share QR code')
+        break
+      case 'reset':
+        console.log('Reset QR code')
+        break
+      default:
+        console.log('QR action:', action)
+    }
+  }
+
+  const getHeaderMenuItems = () => {
+    if (showQRCode) {
+      return [
+        { icon: Share, label: 'Share', action: () => handleQRCodeAction('share') },
+        { icon: RotateCcw, label: 'Reset QR Code', action: () => handleQRCodeAction('reset') }
+      ]
+    }
+
+    // Default settings menu items with QR code options
+    return [
+      { icon: QrCode, label: 'My Code', action: () => handleQRCodeAction('my-code') },
+      { icon: Scan, label: 'Scan Code', action: () => handleQRCodeAction('scan-code') },
+      { icon: RotateCcw, label: 'Reset QR Code', action: () => handleQRCodeAction('reset') },
+      { icon: Share, label: 'Share QR Code', action: () => handleQRCodeAction('share') }
+    ]
+  }
+
   const goBack = () => {
-    if (currentSection === 'main') {
+    if (showQRCode) {
+      setShowQRCode(false)
+    } else if (currentSection === 'main') {
       onClose()
     } else {
       setCurrentSection('main')
@@ -176,11 +221,11 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
 
   const accountItems = [
     {
-      id: 'privacy-security',
-      title: 'Privacy and security',
+      id: 'email-address',
+      title: 'Email Address',
       subtitle: '',
-      icon: Shield,
-      action: () => console.log('Privacy and security')
+      icon: Mail,
+      action: () => console.log('Email Address')
     },
     {
       id: 'two-step',
@@ -453,16 +498,34 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
     </motion.button>
   )
 
-  const renderHeader = (title: string) => (
-    <div className="flex items-center space-x-4 p-4 border-b border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
-      <motion.button
-        onClick={goBack}
-        className="p-2 rounded-full hover:bg-indigo-500/20 transition-colors"
-        whileTap={{ scale: 0.95 }}
-      >
-        <ArrowLeft size={20} className="text-indigo-300" />
-      </motion.button>
-      <h1 className="text-xl font-semibold text-white">{title}</h1>
+  const renderQRCodeSection = () => (
+    <div className="flex-1 flex flex-col items-center justify-center p-8">
+      {qrCodeMode === 'my-code' ? (
+        <div className="text-center">
+          <div className="w-64 h-64 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-2xl">
+            <div className="w-56 h-56 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <QrCode size={200} className="text-white" />
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">My QR Code</h3>
+          <p className="text-indigo-200/80 text-center max-w-xs">
+            Show this code to others to add you as a contact or share your profile
+          </p>
+        </div>
+      ) : (
+        <div className="text-center">
+          <div className="w-64 h-64 border-2 border-dashed border-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+            <div className="text-center">
+              <Scan size={80} className="text-indigo-400 mx-auto mb-4" />
+              <p className="text-indigo-200">Position QR code within frame</p>
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">Scan QR Code</h3>
+          <p className="text-indigo-200/80 text-center max-w-xs">
+            Scan a QR code to add contact or join a group
+          </p>
+        </div>
+      )}
     </div>
   )
 
@@ -471,40 +534,6 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
       case 'main':
         return (
           <div className="flex-1 overflow-y-auto">
-            {/* Profile Section */}
-            <div className="p-6 border-b border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
-              <motion.div 
-                className="flex items-center space-x-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-400">
-                    <Image
-                      src="https://ui-avatars.com/api/?name=Arjun+Sharma&background=6366f1&color=fff"
-                      alt="Profile"
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-white">Arjun Sharma</h2>
-                  <p className="text-indigo-200">Hey there! I am using Linkup.</p>
-                  <p className="text-indigo-300/70 text-sm mt-1">+91 98765 43210</p>
-                </div>
-                <motion.button
-                  className="ml-auto p-2 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <QrCode size={18} className="text-indigo-300" />
-                </motion.button>
-              </motion.div>
-            </div>
-
             {/* Settings Items */}
             <div className="py-2">
               {mainSettingsItems.map(renderSettingItem)}
@@ -579,7 +608,7 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 z-50"
-            onClick={() => currentSection === 'main' && onClose()}
+            onClick={() => !showQRCode && currentSection === 'main' && onClose()}
           />
 
           {/* Settings Modal */}
@@ -591,17 +620,23 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
             className="fixed inset-0 z-50 base-gradient flex flex-col shadow-2xl"
           >
             {/* Header */}
-            {renderHeader(
-              currentSection === 'main' ? 'Settings' :
-              currentSection === 'account' ? 'Account' :
-              currentSection === 'privacy' ? 'Privacy' :
-              currentSection === 'notifications' ? 'Notifications' :
-              currentSection === 'storage' ? 'Storage and data' :
-              currentSection === 'help' ? 'Help' : 'Settings'
-            )}
+            <Header 
+              tabTitle={
+                showQRCode ? (qrCodeMode === 'my-code' ? 'My Code' : 'Scan Code') :
+                currentSection === 'main' ? 'Settings' :
+                currentSection === 'account' ? 'Account' :
+                currentSection === 'privacy' ? 'Privacy' :
+                currentSection === 'notifications' ? 'Notifications' :
+                currentSection === 'storage' ? 'Storage and data' :
+                currentSection === 'help' ? 'Help' : 'Settings'
+              }
+              showBackButton={true}
+              onBackClick={goBack}
+              menuItems={getHeaderMenuItems()}
+            />
 
             {/* Content */}
-            {renderSection()}
+            {showQRCode ? renderQRCodeSection() : renderSection()}
 
             {/* Delete Account Confirmation */}
             <AnimatePresence>

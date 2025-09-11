@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, MoreVertical, Users, Radio, Star, Settings, Smartphone, Plus, MessageCircle } from 'lucide-react'
+import { Search, MoreVertical, Users, Radio, Star, Settings, Smartphone, Plus, MessageCircle, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 
 interface HeaderProps {
@@ -14,6 +14,8 @@ interface HeaderProps {
   currentTab?: string
   tabTitle?: string
   chatCount?: number
+  showBackButton?: boolean
+  onBackClick?: () => void
   menuItems?: Array<{
     icon: any
     label: string
@@ -30,6 +32,8 @@ export default function Header({
   currentTab = 'personal',
   tabTitle = 'Linkup',
   chatCount = 0,
+  showBackButton = false,
+  onBackClick,
   menuItems = []
 }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false)
@@ -51,8 +55,18 @@ export default function Header({
       {/* Header Bar - Mobile First */}
       <div className="menu-gradient px-4 py-3 sm:px-6 sm:py-4 border-b border-indigo-600/50">
         <div className="flex items-center justify-between">
-          {/* Left side - Dynamic Title with Count */}
+          {/* Left side - Back Button + Dynamic Title with Count */}
           <div className="flex items-center space-x-3">
+            {/* Back Button - Only show if back functionality is provided */}
+            {showBackButton && onBackClick && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={onBackClick}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </motion.button>
+            )}
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-white">{tabTitle}</h1>
               {chatCount > 0 && (
