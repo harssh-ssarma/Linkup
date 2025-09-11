@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { auth } from '@/lib/firebase'
+import { signOut } from 'firebase/auth'
 import { 
-  X, 
+  ArrowLeft, 
   User, 
   Shield, 
   Bell, 
@@ -20,16 +22,38 @@ import {
   LogOut,
   ChevronRight,
   Check,
-  Settings
+  Settings,
+  Star,
+  HelpCircle,
+  Smartphone,
+  Radio,
+  Archive,
+  QrCode,
+  Users,
+  Heart,
+  Info
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface SettingsModalProps {
   isOpen: boolean
   onClose: () => void
+  onSignOut?: () => void
 }
 
-export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const [activeSection, setActiveSection] = useState<string | null>(null)
+type SettingsSection = 
+  | 'main' 
+  | 'account' 
+  | 'privacy' 
+  | 'notifications' 
+  | 'storage' 
+  | 'help'
+
+export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsModalProps) {
+  const [currentSection, setCurrentSection] = useState<SettingsSection>('main')
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  
   const [settings, setSettings] = useState({
     // Privacy Settings
     lastSeen: 'everyone',
@@ -37,345 +61,594 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     about: 'everyone',
     status: 'contacts',
     readReceipts: true,
+    onlineStatus: true,
     
     // Notification Settings
     messageNotifications: true,
     groupNotifications: true,
     callNotifications: true,
-    emailNotifications: false,
+    soundEnabled: true,
+    vibrationEnabled: true,
     
     // App Settings
     darkMode: true,
-    language: 'en',
+    language: 'English',
     autoDownload: 'wifi',
-    
-    // Security Settings
-    twoFactor: false,
-    fingerprint: true,
-    screenLock: false
+    fontSize: 'medium'
   })
 
-  const privacyOptions = [
-    { value: 'everyone', label: 'Everyone' },
-    { value: 'contacts', label: 'My Contacts' },
-    { value: 'nobody', label: 'Nobody' }
-  ]
+  const handleSignOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await signOut(auth)
+      if (onSignOut) {
+        onSignOut()
+      }
+      onClose()
+    } catch (error) {
+      console.error('Sign out error:', error)
+    } finally {
+      setIsSigningOut(false)
+    }
+  }
 
-  const settingsSections = [
+  const handleDeleteAccount = async () => {
+    // This would typically involve backend API call
+    console.log('Delete account requested')
+    setShowDeleteConfirm(false)
+    // After successful deletion, sign out
+    handleSignOut()
+  }
+
+  const goBack = () => {
+    if (currentSection === 'main') {
+      onClose()
+    } else {
+      setCurrentSection('main')
+    }
+  }
+
+  const mainSettingsItems = [
     {
       id: 'account',
       title: 'Account',
+      subtitle: 'Security notifications, change number',
       icon: User,
-      items: [
-        { id: 'phone', title: 'Phone Number', subtitle: '+91 98765 43210' },
-        { id: 'username', title: 'Username', subtitle: '@arjunsharma' },
-      ]
+      action: () => setCurrentSection('account')
     },
     {
       id: 'privacy',
       title: 'Privacy',
-      icon: Shield,
-      items: [
-        { id: 'lastSeen', title: 'Last Seen', subtitle: settings.lastSeen },
-        { id: 'profilePhoto', title: 'Profile Photo', subtitle: settings.profilePhoto },
-        { id: 'about', title: 'About', subtitle: settings.about },
-        { id: 'status', title: 'Status', subtitle: settings.status },
-        { id: 'readReceipts', title: 'Read Receipts', subtitle: settings.readReceipts ? 'On' : 'Off' },
-      ]
+      subtitle: 'Block contacts, disappearing messages',
+      icon: Lock,
+      action: () => setCurrentSection('privacy')
+    },
+    {
+      id: 'avatar',
+      title: 'Avatar',
+      subtitle: 'Create, edit, profile photo',
+      icon: Camera,
+      action: () => console.log('Avatar settings')
+    },
+    {
+      id: 'chats',
+      title: 'Chats',
+      subtitle: 'Theme, wallpapers, chat history',
+      icon: MessageSquare,
+      action: () => console.log('Chat settings')
     },
     {
       id: 'notifications',
       title: 'Notifications',
+      subtitle: 'Message, group & call tones',
       icon: Bell,
-      items: [
-        { id: 'messageNotifications', title: 'Messages', subtitle: settings.messageNotifications ? 'On' : 'Off' },
-        { id: 'groupNotifications', title: 'Groups', subtitle: settings.groupNotifications ? 'On' : 'Off' },
-        { id: 'callNotifications', title: 'Calls', subtitle: settings.callNotifications ? 'On' : 'Off' },
-        { id: 'emailNotifications', title: 'Email', subtitle: settings.emailNotifications ? 'On' : 'Off' },
-      ]
+      action: () => setCurrentSection('notifications')
     },
     {
-      id: 'security',
-      title: 'Security',
-      icon: Lock,
-      items: [
-        { id: 'twoFactor', title: 'Two-Factor Authentication', subtitle: settings.twoFactor ? 'Enabled' : 'Disabled' },
-        { id: 'fingerprint', title: 'Fingerprint Lock', subtitle: settings.fingerprint ? 'On' : 'Off' },
-        { id: 'screenLock', title: 'Screen Lock', subtitle: settings.screenLock ? 'On' : 'Off' },
-      ]
+      id: 'storage',
+      title: 'Storage and data',
+      subtitle: 'Network usage, auto-download',
+      icon: Download,
+      action: () => setCurrentSection('storage')
     },
     {
-      id: 'app',
-      title: 'App Settings',
+      id: 'app-language',
+      title: 'App language',
+      subtitle: 'English (device\'s language)',
       icon: Globe,
-      items: [
-        { id: 'darkMode', title: 'Dark Mode', subtitle: settings.darkMode ? 'On' : 'Off' },
-        { id: 'language', title: 'Language', subtitle: 'English' },
-        { id: 'autoDownload', title: 'Auto-Download Media', subtitle: 'Wi-Fi only' },
-      ]
+      action: () => console.log('Language settings')
     },
     {
-      id: 'signout',
-      title: 'Sign Out',
-      icon: LogOut,
-      items: []
+      id: 'help',
+      title: 'Help',
+      subtitle: 'Help centre, contact us, privacy policy',
+      icon: HelpCircle,
+      action: () => setCurrentSection('help')
+    },
+    {
+      id: 'invite',
+      title: 'Invite a friend',
+      subtitle: '',
+      icon: Heart,
+      action: () => console.log('Invite friend')
     }
   ]
 
-  const handleSettingChange = (key: string, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }))
-  }
+  const accountItems = [
+    {
+      id: 'privacy-security',
+      title: 'Privacy and security',
+      subtitle: '',
+      icon: Shield,
+      action: () => console.log('Privacy and security')
+    },
+    {
+      id: 'two-step',
+      title: 'Two-step verification',
+      subtitle: 'Disabled',
+      icon: Lock,
+      action: () => console.log('Two-step verification')
+    },
+    {
+      id: 'change-number',
+      title: 'Change number',
+      subtitle: '',
+      icon: Phone,
+      action: () => console.log('Change number')
+    },
+    {
+      id: 'request-info',
+      title: 'Request account info',
+      subtitle: '',
+      icon: Info,
+      action: () => console.log('Request info')
+    },
+    {
+      id: 'add-account',
+      title: 'Add account',
+      subtitle: '',
+      icon: User,
+      action: () => console.log('Add account')
+    },
+    {
+      id: 'delete-account',
+      title: 'Delete my account',
+      subtitle: '',
+      icon: Trash2,
+      action: () => setShowDeleteConfirm(true),
+      danger: true
+    }
+  ]
 
-  const renderPrivacySettings = (settingKey: string) => (
-    <div className="space-y-3">
-      {privacyOptions.map((option) => (
-        <motion.button
-          key={option.value}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => handleSettingChange(settingKey, option.value)}
-          className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors ${
-            settings[settingKey as keyof typeof settings] === option.value
-              ? 'bg-blue-500/20 border border-blue-500/30'
-              : 'bg-white/5 hover:bg-white/10'
-          }`}
-        >
-          <span className="text-white">{option.label}</span>
-          {settings[settingKey as keyof typeof settings] === option.value && (
-            <Check size={20} className="text-blue-400" />
-          )}
-        </motion.button>
-      ))}
-    </div>
-  )
+  const privacyItems = [
+    {
+      id: 'last-seen',
+      title: 'Last seen and online',
+      subtitle: settings.lastSeen,
+      icon: Eye,
+      action: () => console.log('Last seen settings')
+    },
+    {
+      id: 'profile-photo',
+      title: 'Profile photo',
+      subtitle: settings.profilePhoto,
+      icon: Camera,
+      action: () => console.log('Profile photo privacy')
+    },
+    {
+      id: 'about',
+      title: 'About',
+      subtitle: settings.about,
+      icon: Info,
+      action: () => console.log('About privacy')
+    },
+    {
+      id: 'status',
+      title: 'Status',
+      subtitle: settings.status,
+      icon: Radio,
+      action: () => console.log('Status privacy')
+    },
+    {
+      id: 'read-receipts',
+      title: 'Read receipts',
+      subtitle: settings.readReceipts ? 'On' : 'Off',
+      icon: Check,
+      action: () => setSettings(prev => ({ ...prev, readReceipts: !prev.readReceipts }))
+    },
+    {
+      id: 'groups',
+      title: 'Groups',
+      subtitle: 'Everyone',
+      icon: Users,
+      action: () => console.log('Groups privacy')
+    },
+    {
+      id: 'live-location',
+      title: 'Live location',
+      subtitle: 'None',
+      icon: Globe,
+      action: () => console.log('Live location')
+    },
+    {
+      id: 'blocked',
+      title: 'Blocked contacts',
+      subtitle: 'None',
+      icon: Lock,
+      action: () => console.log('Blocked contacts')
+    },
+    {
+      id: 'disappearing',
+      title: 'Disappearing messages',
+      subtitle: 'Off',
+      icon: MessageSquare,
+      action: () => console.log('Disappearing messages')
+    }
+  ]
 
-  const renderToggleSetting = (settingKey: string) => (
+  const notificationItems = [
+    {
+      id: 'conversation-tones',
+      title: 'Conversation tones',
+      subtitle: 'Play sounds for incoming and outgoing messages',
+      icon: Bell,
+      toggle: settings.messageNotifications,
+      action: () => setSettings(prev => ({ ...prev, messageNotifications: !prev.messageNotifications }))
+    },
+    {
+      id: 'messages',
+      title: 'Messages',
+      subtitle: 'Default',
+      icon: MessageSquare,
+      action: () => console.log('Message notifications')
+    },
+    {
+      id: 'groups',
+      title: 'Groups',
+      subtitle: 'Default',
+      icon: Users,
+      action: () => console.log('Group notifications')
+    },
+    {
+      id: 'calls',
+      title: 'Calls',
+      subtitle: 'Default',
+      icon: Phone,
+      action: () => console.log('Call notifications')
+    },
+    {
+      id: 'high-priority',
+      title: 'High priority notifications',
+      subtitle: 'Show previews of notifications at the top of the screen',
+      icon: Star,
+      toggle: settings.soundEnabled,
+      action: () => setSettings(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }))
+    },
+    {
+      id: 'reaction-notifications',
+      title: 'Reaction notifications',
+      subtitle: 'Show notifications when contacts react to your messages',
+      icon: Heart,
+      toggle: settings.vibrationEnabled,
+      action: () => setSettings(prev => ({ ...prev, vibrationEnabled: !prev.vibrationEnabled }))
+    }
+  ]
+
+  const storageItems = [
+    {
+      id: 'manage-storage',
+      title: 'Manage storage',
+      subtitle: '2.5 GB',
+      icon: Download,
+      action: () => console.log('Manage storage')
+    },
+    {
+      id: 'network-usage',
+      title: 'Network usage',
+      subtitle: '142 MB sent • 1.2 GB received',
+      icon: Globe,
+      action: () => console.log('Network usage')
+    },
+    {
+      id: 'use-less-data',
+      title: 'Use less data for calls',
+      subtitle: 'Never',
+      icon: Phone,
+      action: () => console.log('Use less data')
+    },
+    {
+      id: 'auto-download-media',
+      title: 'Media auto-download',
+      subtitle: '',
+      icon: Download,
+      action: () => console.log('Auto download media')
+    },
+    {
+      id: 'when-using-mobile',
+      title: 'When using mobile data',
+      subtitle: 'Photos',
+      icon: Smartphone,
+      action: () => console.log('Mobile data settings')
+    },
+    {
+      id: 'when-connected-wifi',
+      title: 'When connected on Wi-Fi',
+      subtitle: 'All media',
+      icon: Radio,
+      action: () => console.log('WiFi settings')
+    },
+    {
+      id: 'when-roaming',
+      title: 'When roaming',
+      subtitle: 'No media',
+      icon: Globe,
+      action: () => console.log('Roaming settings')
+    }
+  ]
+
+  const helpItems = [
+    {
+      id: 'help-centre',
+      title: 'Help centre',
+      subtitle: '',
+      icon: HelpCircle,
+      action: () => console.log('Help centre')
+    },
+    {
+      id: 'contact-us',
+      title: 'Contact us',
+      subtitle: 'Questions? Need help?',
+      icon: MessageSquare,
+      action: () => console.log('Contact us')
+    },
+    {
+      id: 'terms-privacy',
+      title: 'Terms and Privacy Policy',
+      subtitle: '',
+      icon: Shield,
+      action: () => console.log('Terms and privacy')
+    },
+    {
+      id: 'app-info',
+      title: 'App info',
+      subtitle: '',
+      icon: Info,
+      action: () => console.log('App info')
+    }
+  ]
+
+  const renderSettingItem = (item: any) => (
     <motion.button
+      key={item.id}
+      onClick={item.action}
+      className={`w-full flex items-center justify-between p-4 hover:bg-indigo-500/10 transition-colors ${
+        item.danger ? 'text-red-400' : 'text-white'
+      } border-b border-white/5 last:border-b-0`}
       whileTap={{ scale: 0.98 }}
-      onClick={() => handleSettingChange(settingKey, !settings[settingKey as keyof typeof settings])}
-      className={`w-full flex items-center justify-between p-4 rounded-xl transition-colors ${
-        settings[settingKey as keyof typeof settings]
-          ? 'bg-blue-500/20 border border-blue-500/30'
-          : 'bg-white/5 hover:bg-white/10'
-      }`}
     >
-      <span className="text-white">
-        {settings[settingKey as keyof typeof settings] ? 'Enabled' : 'Disabled'}
-      </span>
-      <div className={`w-12 h-6 rounded-full transition-colors ${
-        settings[settingKey as keyof typeof settings] ? 'bg-blue-500' : 'bg-white/20'
-      }`}>
-        <div className={`w-5 h-5 bg-white rounded-full mt-0.5 transition-transform ${
-          settings[settingKey as keyof typeof settings] ? 'translate-x-6' : 'translate-x-0.5'
-        }`} />
+      <div className="flex items-center space-x-4">
+        <div className={`p-2 rounded-lg ${item.danger ? 'bg-red-500/20' : 'bg-indigo-500/20'}`}>
+          <item.icon size={18} className={item.danger ? 'text-red-400' : 'text-indigo-300'} />
+        </div>
+        <div className="text-left">
+          <p className={`font-medium ${item.danger ? 'text-red-400' : 'text-white'}`}>
+            {item.title}
+          </p>
+          {item.subtitle && (
+            <p className="text-sm text-white/60 mt-0.5">{item.subtitle}</p>
+          )}
+        </div>
       </div>
+      {item.toggle !== undefined ? (
+        <div className={`w-12 h-6 rounded-full transition-colors ${
+          item.toggle ? 'bg-indigo-500' : 'bg-white/20'
+        }`}>
+          <div className={`w-5 h-5 rounded-full bg-white transition-transform duration-200 mt-0.5 ${
+            item.toggle ? 'translate-x-6' : 'translate-x-0.5'
+          }`} />
+        </div>
+      ) : (
+        <ChevronRight size={16} className="text-indigo-300/60" />
+      )}
     </motion.button>
   )
 
-  if (!isOpen) return null
+  const renderHeader = (title: string) => (
+    <div className="flex items-center space-x-4 p-4 border-b border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
+      <motion.button
+        onClick={goBack}
+        className="p-2 rounded-full hover:bg-indigo-500/20 transition-colors"
+        whileTap={{ scale: 0.95 }}
+      >
+        <ArrowLeft size={20} className="text-indigo-300" />
+      </motion.button>
+      <h1 className="text-xl font-semibold text-white">{title}</h1>
+    </div>
+  )
+
+  const renderSection = () => {
+    switch (currentSection) {
+      case 'main':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            {/* Profile Section */}
+            <div className="p-6 border-b border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
+              <motion.div 
+                className="flex items-center space-x-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-400">
+                    <Image
+                      src="https://ui-avatars.com/api/?name=Arjun+Sharma&background=6366f1&color=fff"
+                      alt="Profile"
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Arjun Sharma</h2>
+                  <p className="text-indigo-200">Hey there! I am using Linkup.</p>
+                  <p className="text-indigo-300/70 text-sm mt-1">+91 98765 43210</p>
+                </div>
+                <motion.button
+                  className="ml-auto p-2 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <QrCode size={18} className="text-indigo-300" />
+                </motion.button>
+              </motion.div>
+            </div>
+
+            {/* Settings Items */}
+            <div className="py-2">
+              {mainSettingsItems.map(renderSettingItem)}
+            </div>
+          </div>
+        )
+
+      case 'account':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {accountItems.map(renderSettingItem)}
+            </div>
+          </div>
+        )
+
+      case 'privacy':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {privacyItems.map(renderSettingItem)}
+            </div>
+            <div className="p-4 text-center text-indigo-200/70 text-sm border-t border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
+              Changes to your privacy settings won't affect messages you've already sent.
+            </div>
+          </div>
+        )
+
+      case 'notifications':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {notificationItems.map(renderSettingItem)}
+            </div>
+          </div>
+        )
+
+      case 'storage':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {storageItems.map(renderSettingItem)}
+            </div>
+          </div>
+        )
+
+      case 'help':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {helpItems.map(renderSettingItem)}
+            </div>
+            <div className="p-4 text-center text-indigo-200/70 text-sm border-t border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
+              Linkup v2.25.9.11{'\n'}
+              Made with ❤️ by Linkup Team
+            </div>
+          </div>
+        )
+
+      default:
+        return null
+    }
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="w-full max-w-2xl mx-4 h-[80vh]"
-      >
-        <div className="glass-effect rounded-2xl border border-white/20 h-full flex">
-          {/* Sidebar */}
-          <div className="w-80 border-r border-white/20 flex flex-col">
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50"
+            onClick={() => currentSection === 'main' && onClose()}
+          />
+
+          {/* Settings Modal */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className="fixed inset-0 z-50 base-gradient flex flex-col shadow-2xl"
+          >
             {/* Header */}
-            <div className="p-6 border-b border-white/20">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">Settings</h2>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={onClose}
-                  className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  <X size={20} />
-                </motion.button>
-              </div>
-            </div>
-
-            {/* Settings Sections */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-2">
-                {settingsSections.map((section) => {
-                  const Icon = section.icon
-                  return (
-                    <motion.button
-                      key={section.id}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        if (section.id === 'signout') {
-                          // Handle sign out
-                          if (confirm('Are you sure you want to sign out?')) {
-                            // Add your sign out logic here
-                            console.log('Signing out...')
-                            onClose()
-                          }
-                        } else {
-                          setActiveSection(section.id)
-                        }
-                      }}
-                      className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-colors ${
-                        activeSection === section.id
-                          ? 'bg-blue-500/20 border border-blue-500/30'
-                          : section.id === 'signout'
-                          ? 'hover:bg-red-500/10 text-red-400'
-                          : 'hover:bg-white/5'
-                      }`}
-                    >
-                      <Icon size={20} className={section.id === 'signout' ? 'text-red-400' : 'text-white/80'} />
-                      <span className={`font-medium ${section.id === 'signout' ? 'text-red-400' : 'text-white'}`}>{section.title}</span>
-                      {section.id !== 'signout' && <ChevronRight size={16} className="text-white/40 ml-auto" />}
-                    </motion.button>
-                  )
-                })}
-              </div>
-
-              {/* Danger Zone */}
-              <div className="mt-8 pt-6 border-t border-white/10">
-                <h3 className="text-sm font-semibold text-white/60 mb-3">Danger Zone</h3>
-                <div className="space-y-2">
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full flex items-center space-x-3 p-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors"
-                  >
-                    <Trash2 size={20} />
-                    <span>Delete Account</span>
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 flex flex-col">
-            {activeSection ? (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeSection}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="flex-1 overflow-y-auto"
-                >
-                  {/* Section Header */}
-                  <div className="p-6 border-b border-white/20">
-                    <h3 className="text-lg font-semibold text-white">
-                      {settingsSections.find(s => s.id === activeSection)?.title}
-                    </h3>
-                  </div>
-
-                  {/* Section Content */}
-                  <div className="p-6">
-                    {activeSection === 'privacy' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Last Seen</h4>
-                          {renderPrivacySettings('lastSeen')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Profile Photo</h4>
-                          {renderPrivacySettings('profilePhoto')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">About</h4>
-                          {renderPrivacySettings('about')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Read Receipts</h4>
-                          {renderToggleSetting('readReceipts')}
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSection === 'notifications' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Message Notifications</h4>
-                          {renderToggleSetting('messageNotifications')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Group Notifications</h4>
-                          {renderToggleSetting('groupNotifications')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Call Notifications</h4>
-                          {renderToggleSetting('callNotifications')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Email Notifications</h4>
-                          {renderToggleSetting('emailNotifications')}
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSection === 'security' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Two-Factor Authentication</h4>
-                          {renderToggleSetting('twoFactor')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Fingerprint Lock</h4>
-                          {renderToggleSetting('fingerprint')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Screen Lock</h4>
-                          {renderToggleSetting('screenLock')}
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSection === 'app' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Dark Mode</h4>
-                          {renderToggleSetting('darkMode')}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium mb-3">Language</h4>
-                          <div className="p-4 bg-white/5 rounded-xl">
-                            <span className="text-white">English (US)</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSection === 'account' && (
-                      <div className="space-y-4">
-                        <div className="p-4 bg-white/5 rounded-xl">
-                          <h4 className="text-white font-medium mb-2">Profile Information</h4>
-                          <p className="text-white/60 text-sm">Manage your profile details and personal information</p>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-xl">
-                          <h4 className="text-white font-medium mb-2">Phone Number</h4>
-                          <p className="text-white/60 text-sm">+91 98765 43210</p>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-xl">
-                          <h4 className="text-white font-medium mb-2">Username</h4>
-                          <p className="text-white/60 text-sm">@arjunsharma</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center text-white/60">
-                  <Settings size={48} className="mx-auto mb-4 text-white/30" />
-                  <h3 className="text-lg font-semibold mb-2">Settings</h3>
-                  <p className="text-sm">Select a category to configure your preferences</p>
-                </div>
-              </div>
+            {renderHeader(
+              currentSection === 'main' ? 'Settings' :
+              currentSection === 'account' ? 'Account' :
+              currentSection === 'privacy' ? 'Privacy' :
+              currentSection === 'notifications' ? 'Notifications' :
+              currentSection === 'storage' ? 'Storage and data' :
+              currentSection === 'help' ? 'Help' : 'Settings'
             )}
-          </div>
-        </div>
-      </motion.div>
-    </div>
+
+            {/* Content */}
+            {renderSection()}
+
+            {/* Delete Account Confirmation */}
+            <AnimatePresence>
+              {showDeleteConfirm && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/80 flex items-center justify-center z-60 p-4"
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="base-gradient rounded-2xl p-6 w-full max-w-md border border-indigo-500/30 shadow-2xl"
+                  >
+                    <div className="text-center mb-6">
+                      <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Trash2 size={32} className="text-red-400" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2">Delete Account</h3>
+                      <p className="text-indigo-200/80 leading-relaxed">
+                        Are you sure you want to delete your account? This action cannot be undone.
+                        All your messages, media, and data will be permanently deleted.
+                      </p>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="flex-1 py-3 rounded-xl bg-indigo-500/20 text-white font-medium hover:bg-indigo-500/30 transition-colors border border-indigo-500/30"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleDeleteAccount}
+                        className="flex-1 py-3 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors shadow-lg"
+                      >
+                        Delete Account
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 }

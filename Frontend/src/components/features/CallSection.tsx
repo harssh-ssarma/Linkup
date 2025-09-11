@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Phone, Video, PhoneCall, Clock, PhoneOff, Search, MoreVertical, UserPlus } from 'lucide-react'
+import { Phone, Video, PhoneCall, Clock, PhoneOff, Search, MoreVertical, UserPlus, Settings } from 'lucide-react'
+import Header from '@/components/layout/Header'
 
 interface CallHistory {
   id: string
@@ -25,6 +26,13 @@ interface Contact {
 export default function CallSection() {
   const [activeTab, setActiveTab] = useState<'recent' | 'contacts'>('recent')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
+
+  // Custom menu items for Calls section
+  const callMenuItems = [
+    { icon: UserPlus, label: 'Add Contact', action: () => console.log('Add Contact') },
+    { icon: Settings, label: 'Call Settings', action: () => console.log('Call Settings') },
+  ]
 
   const callHistory: CallHistory[] = [
     {
@@ -140,40 +148,18 @@ export default function CallSection() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="glass-card-dark p-4 border-b border-white/10">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-white">Calls</h1>
-          <div className="flex items-center gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            >
-              <Search className="w-5 h-5 text-white" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            >
-              <MoreVertical className="w-5 h-5 text-white" />
-            </motion.button>
-          </div>
-        </div>
+      <Header 
+        tabTitle="Calls"
+        currentTab={activeTab}
+        onSearchToggle={() => setShowSearch(!showSearch)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        showSearch={showSearch}
+        menuItems={callMenuItems}
+      />
 
-        {/* Search Bar */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/60" />
-          <input
-            type="text"
-            placeholder="Search calls..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white/10 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-blue-400 focus:outline-none transition-colors"
-          />
-        </div>
-
-        {/* Tab Navigation */}
+      {/* Tab Navigation */}
+      <div className="px-4 py-3 border-b border-white/20">
         <div className="flex bg-white/10 rounded-lg p-1">
           {[
             { id: 'recent', label: 'Recent' },

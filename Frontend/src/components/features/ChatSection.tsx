@@ -6,6 +6,7 @@ import { Search, Plus, MoreVertical, Phone, Video, Users, Radio, Settings, Arrow
 import ChatList from '@/components/features/ChatList'
 import ChatWindow from '@/components/features/ChatWindow'
 import NewChatModal from '@/components/features/NewChatModal'
+import Header from '@/components/layout/Header'
 
 interface Chat {
   id: string
@@ -27,12 +28,28 @@ interface Chat {
   status?: string
 }
 
-export default function ChatSection() {
-  const [activeChat, setActiveChat] = useState<string | null>(null)
+interface ChatSectionProps {
+  activeChat: string | null
+  onChatChange: (chatId: string | null) => void
+}
+
+export default function ChatSection({ activeChat: propActiveChat, onChatChange }: ChatSectionProps) {
+  // Use props instead of internal state
+  const activeChat = propActiveChat
+  const setActiveChat = onChatChange
+  
   const [chatTab, setChatTab] = useState<'personal' | 'groups' | 'channels'>('personal')
   const [showNewChat, setShowNewChat] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
   const [chats, setChats] = useState<Chat[]>([])
+
+  // Tab title mapping
+  const tabTitles = {
+    personal: 'Chats',
+    groups: 'Groups', 
+    channels: 'Channels'
+  }
 
   // Mock data based on chat type
   useEffect(() => {
@@ -104,47 +121,34 @@ export default function ChatSection() {
   ]
 
   return (
-    <div className="h-full flex bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+    <div className="h-full flex base-gradient">
       {/* Mobile: Stacked Layout */}
       <div className="flex flex-col md:flex-row w-full h-full">
         
         {/* Left Pane - Chat List */}
         <div className={`${
           activeChat ? 'hidden md:flex' : 'flex'
-        } w-full md:w-1/3 lg:w-[400px] xl:w-[420px] bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg border-r border-slate-200/50 dark:border-slate-700/50 flex-col`}>
+        } ${
+          activeChat 
+            ? 'w-full md:w-1/3 lg:w-[400px] xl:w-[420px]' 
+            : 'w-full'
+        } base-gradient-light backdrop-blur-lg ${activeChat ? 'border-r border-indigo-600/50' : ''} flex-col`}>
           
           {/* Header */}
-          <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/60 dark:bg-slate-800/60">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-1">Chats</h1>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Stay connected</p>
-              </div>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowNewChat(true)}
-                className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all touch-manipulation"
-                title="New Chat"
-              >
-                <Plus size={18} className="sm:hidden" />
-                <Plus size={22} className="hidden sm:block" />
-              </motion.button>
-            </div>
+          <Header 
+            onSearchToggle={() => setShowSearch(!showSearch)}
+            onNewChatClick={() => setShowNewChat(true)}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            showSearch={showSearch}
+            currentTab={chatTab}
+            tabTitle={tabTitles[chatTab]}
+            chatCount={chats.length}
+          />
 
-            {/* Search */}
-            <div className="relative mb-4 sm:mb-6">
-              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-white/40" size={16} />
-              <input
-                type="text"
-                placeholder="Search chats..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-slate-100/80 dark:bg-slate-700/50 border border-slate-200/50 dark:border-slate-600/50 rounded-lg sm:rounded-xl text-sm sm:text-base text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white dark:focus:bg-slate-700/80 transition-all"
-              />
-            </div>
-
-            {/* Chat Tabs */}
-            <div className="flex space-x-1 bg-slate-100/80 dark:bg-slate-700/50 rounded-lg p-1">
+          {/* Chat Tabs */}
+          <div className="px-4 py-3 border-b border-indigo-600/50">
+            <div className="flex space-x-1 bg-white/10 rounded-lg p-1">
               {chatTabs.map((tab) => {
                 const isActive = chatTab === tab.id
                 const Icon = tab.icon
@@ -155,8 +159,8 @@ export default function ChatSection() {
                     onClick={() => setChatTab(tab.id as any)}
                     className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 py-2 sm:py-3 px-2 sm:px-4 rounded-md transition-all duration-200 text-xs sm:text-sm ${
                       isActive 
-                        ? 'bg-white dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 shadow-md' 
-                        : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10'
+                        ? 'bg-white/20 text-white shadow-md' 
+                        : 'text-white/60 hover:text-white hover:bg-white/10'
                     }`}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -182,15 +186,15 @@ export default function ChatSection() {
         </div>
 
         {/* Right Pane - Chat Window */}
-        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} flex-1 bg-slate-50 dark:bg-slate-900`}>
+        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} flex-1 base-gradient-light`}>
           {activeChat ? (
             <div className="flex-1 flex flex-col">
               {/* Mobile Back Button Header */}
-              <div className="md:hidden p-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-700/50">
+              <div className="md:hidden p-4 base-gradient-light backdrop-blur-lg border-b border-indigo-600/50">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveChat(null)}
-                  className="p-2 rounded-full text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors touch-manipulation"
+                  className="p-2 rounded-full text-white/70 hover:bg-white/10 transition-colors touch-manipulation"
                 >
                   <ArrowLeft size={20} />
                 </motion.button>
@@ -209,15 +213,15 @@ export default function ChatSection() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center px-4 sm:px-8 max-w-md"
               >
-                <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
+                <div className="w-16 h-16 sm:w-24 sm:h-24 menu-gradient rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
                   <MessageCircle size={32} className="text-white sm:w-12 sm:h-12" />
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-slate-900 dark:text-white">Welcome to Linkup</h2>
-                <p className="text-slate-600 dark:text-slate-400 mb-6 sm:mb-8 text-base sm:text-lg">Select a conversation to start messaging</p>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">Welcome to Linkup</h2>
+                <p className="text-white/70 mb-6 sm:mb-8 text-base sm:text-lg">Select a conversation to start messaging</p>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowNewChat(true)}
-                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl text-white font-semibold shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 sm:space-x-3 mx-auto text-sm sm:text-lg touch-manipulation"
+                  className="px-6 sm:px-8 py-3 sm:py-4 menu-gradient rounded-xl sm:rounded-2xl text-white font-semibold shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 sm:space-x-3 mx-auto text-sm sm:text-lg touch-manipulation"
                 >
                   <Plus size={18} className="sm:w-5 sm:h-5" />
                   <span>Start New Chat</span>

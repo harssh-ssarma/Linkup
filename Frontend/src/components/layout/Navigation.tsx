@@ -58,8 +58,8 @@ export default function Navigation() {
           >
             <div className="w-8 h-8 relative flex-shrink-0">
               <Image
-                src="/echo.png"
-                alt="Echo Logo"
+                src="/echo1.png"
+                alt="echo Logo"
                 width={32}
                 height={32}
                 className="rounded-lg"
@@ -109,7 +109,7 @@ export default function Navigation() {
             
             return (
               <Link key={tab.id} href={tab.href} className="block mb-2 px-2">
-                <motion.button
+                <button
                   className={`relative flex items-center w-full rounded-xl transition-all duration-200 ${
                     isSidebarExpanded ? 'px-4 py-3' : 'w-12 h-12 justify-center mx-auto'
                   } ${
@@ -117,8 +117,6 @@ export default function Navigation() {
                       ? 'bg-white/20 text-white' 
                       : 'text-white/60 hover:text-white hover:bg-white/10'
                   }`}
-                  whileTap={{ scale: 0.95 }}
-                  whileHover={{ scale: 1.02 }}
                 >
                   {/* Icon */}
                   <div className="relative">
@@ -126,13 +124,9 @@ export default function Navigation() {
                     
                     {/* Notification Badge */}
                     {tab.badge && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium"
-                      >
+                      <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
                         {tab.badge}
-                      </motion.div>
+                      </div>
                     )}
                   </div>
                   
@@ -153,7 +147,7 @@ export default function Navigation() {
                   >
                     {tab.label}
                   </motion.span>
-                </motion.button>
+                </button>
               </Link>
             )
           })}
@@ -170,13 +164,12 @@ export default function Navigation() {
             return (
               <Link key={tab.id} href={tab.href}>
                 <motion.button
-                  className={`relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
-                    isActive 
-                      ? 'text-white' 
-                      : 'text-white/60 hover:text-white'
-                  }`}
                   whileTap={{ scale: 0.95 }}
-                  whileHover={{ scale: 1.05 }}
+                  className={`relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 px-3 py-2 rounded-lg ${
+                    isActive 
+                      ? 'text-white bg-white/20' 
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                  }`}
                 >
                   {/* Icon */}
                   <div className="relative">
@@ -184,13 +177,9 @@ export default function Navigation() {
                     
                     {/* Notification Badge */}
                     {tab.badge && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium"
-                      >
+                      <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
                         {tab.badge}
-                      </motion.div>
+                      </div>
                     )}
                   </div>
                   

@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Play } from 'lucide-react'
+import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Play, Camera, Users, Settings } from 'lucide-react'
 import Image from 'next/image'
 import StoriesBar from '@/components/features/StoriesBar'
+import Header from '@/components/layout/Header'
 
 interface Post {
   id: string
@@ -33,6 +34,14 @@ interface Post {
 
 export default function FeedSection() {
   const [feedTab, setFeedTab] = useState<'all' | 'friends' | 'trending'>('all')
+  
+  // Custom menu items for Feed section
+  const feedMenuItems = [
+    { icon: Camera, label: 'Create Post', action: () => console.log('Create Post') },
+    { icon: Users, label: 'Find Friends', action: () => console.log('Find Friends') },
+    { icon: Settings, label: 'Feed Settings', action: () => console.log('Feed Settings') },
+  ]
+  
   const [posts, setPosts] = useState<Post[]>([
     {
       id: '1',
@@ -123,20 +132,14 @@ export default function FeedSection() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="glass-effect border-b border-white/20 p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-white">Feed</h1>
-          <div className="flex space-x-2">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <MoreHorizontal size={20} />
-            </motion.button>
-          </div>
-        </div>
+      <Header 
+        tabTitle="Feed"
+        currentTab={feedTab}
+        menuItems={feedMenuItems}
+      />
 
-        {/* Feed Tabs */}
+      {/* Feed Tabs */}
+      <div className="px-4 py-3 border-b border-white/20">
         <div className="flex space-x-1 bg-white/5 rounded-lg p-1">
           {[
             { id: 'all', label: 'All' },

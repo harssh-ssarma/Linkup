@@ -1,18 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Users, Radio, X, Phone, UserPlus, Globe } from 'lucide-react'
-import Image from 'next/image'
-
-interface Contact {
-  id: string
-  name: string
-  phone: string
-  avatar: string
-  isOnline: boolean
-  isRegistered: boolean
-}
+import { X, Search, MessageCircle, Users, Radio } from 'lucide-react'
 
 interface NewChatModalProps {
   isOpen: boolean
@@ -21,257 +11,117 @@ interface NewChatModalProps {
 }
 
 export default function NewChatModal({ isOpen, onClose, onChatCreated }: NewChatModalProps) {
-  const [activeTab, setActiveTab] = useState<'contacts' | 'groups' | 'channels'>('contacts')
   const [searchQuery, setSearchQuery] = useState('')
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [selectedContacts, setSelectedContacts] = useState<string[]>([])
-  const [isLoadingContacts, setIsLoadingContacts] = useState(false)
 
-  // Mock contacts data
-  const mockContacts: Contact[] = [
-    {
-      id: '1',
-      name: 'Priya Patel',
-      phone: '+91 98765 43210',
-      avatar: 'https://ui-avatars.com/api/?name=Priya+Patel&background=random&color=fff',
-      isOnline: true,
-      isRegistered: true
-    },
-    {
-      id: '2',
-      name: 'Rahul Gupta',
-      phone: '+91 87654 32109',
-      avatar: 'https://ui-avatars.com/api/?name=Rahul+Gupta&background=random&color=fff',
-      isOnline: false,
-      isRegistered: true
-    },
-    {
-      id: '3',
-      name: 'Kavya Reddy',
-      phone: '+91 76543 21098',
-      avatar: 'https://ui-avatars.com/api/?name=Kavya+Reddy&background=random&color=fff',
-      isOnline: true,
-      isRegistered: false
-    }
+  const options = [
+    { id: 'new-chat', icon: MessageCircle, label: 'New Chat', description: 'Start a personal conversation' },
+    { id: 'new-group', icon: Users, label: 'New Group', description: 'Create a group chat' },
+    { id: 'new-broadcast', icon: Radio, label: 'New Broadcast', description: 'Send messages to multiple contacts' },
   ]
 
-  useEffect(() => {
-    if (isOpen) {
-      setContacts(mockContacts)
-    }
-  }, [isOpen])
-
-  const loadGoogleContacts = async () => {
-    setIsLoadingContacts(true)
-    // Simulate Google Contacts API call
-    setTimeout(() => {
-      setContacts(mockContacts)
-      setIsLoadingContacts(false)
-    }, 2000)
-  }
-
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.phone.includes(searchQuery)
-  )
-
-  const handleContactSelect = (contactId: string) => {
-    if (activeTab === 'contacts') {
-      // Start 1-on-1 chat
-      onChatCreated(contactId)
-    } else {
-      // Add to group selection
-      setSelectedContacts(prev => 
-        prev.includes(contactId) 
-          ? prev.filter(id => id !== contactId)
-          : [...prev, contactId]
-      )
-    }
-  }
-
-  const createGroup = () => {
-    if (selectedContacts.length > 0) {
-      const groupId = `group_${Date.now()}`
-      onChatCreated(groupId)
-    }
-  }
-
-  if (!isOpen) return null
+  const contacts = [
+    { id: '1', name: 'Alice Johnson', avatar: 'https://ui-avatars.com/api/?name=Alice+Johnson&background=6366f1&color=fff', status: 'Online' },
+    { id: '2', name: 'Bob Smith', avatar: 'https://ui-avatars.com/api/?name=Bob+Smith&background=8b5cf6&color=fff', status: 'Last seen 2 hours ago' },
+    { id: '3', name: 'Carol Davis', avatar: 'https://ui-avatars.com/api/?name=Carol+Davis&background=ec4899&color=fff', status: 'Online' },
+  ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="w-full max-w-2xl mx-4 h-[80vh]"
-      >
-        <div className="glass-effect rounded-2xl border border-white/20 h-full flex flex-col">
-          {/* Header */}
-          <div className="p-6 border-b border-white/20">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white">New Chat</h2>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50"
+            onClick={onClose}
+          />
+          
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed inset-x-4 top-20 bottom-20 md:inset-x-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-96 md:h-auto md:max-h-[80vh] menu-gradient rounded-xl shadow-2xl z-50 flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/20">
+              <h2 className="text-lg font-semibold text-white">New Chat</h2>
+              <button
                 onClick={onClose}
-                className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-2 rounded-lg hover:bg-white/10 text-white transition-colors"
               >
                 <X size={20} />
-              </motion.button>
+              </button>
             </div>
 
-            {/* Tabs */}
-            <div className="flex space-x-1 bg-white/5 rounded-lg p-1">
-              {[
-                { id: 'contacts', label: 'Contacts', icon: UserPlus },
-                { id: 'groups', label: 'New Group', icon: Users },
-              ].map((tab) => {
-                const isActive = activeTab === tab.id
-                const Icon = tab.icon
-                
+            {/* Search */}
+            <div className="p-4 border-b border-blue-600">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60" size={16} />
+                <input
+                  type="text"
+                  placeholder="Search contacts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Options */}
+            <div className="p-4 border-b border-blue-600">
+              {options.map((option) => {
+                const Icon = option.icon
                 return (
-                  <motion.button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-2 px-3 rounded-md transition-all duration-200 ${
-                      isActive 
-                        ? 'bg-blue-500/30 text-blue-300' 
-                        : 'text-white/60 hover:text-white hover:bg-white/10'
-                    }`}
-                    whileTap={{ scale: 0.98 }}
+                  <button
+                    key={option.id}
+                    onClick={() => {
+                      onChatCreated(option.id)
+                      onClose()
+                    }}
+                    className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left"
                   >
-                    <Icon size={16} />
-                    <span className="text-sm font-medium">{tab.label}</span>
-                  </motion.button>
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <Icon size={20} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">{option.label}</p>
+                      <p className="text-sm text-white/60">{option.description}</p>
+                    </div>
+                  </button>
                 )
               })}
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Search & Actions */}
-            <div className="p-4 border-b border-white/10">
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search contacts or enter phone number..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                />
-              </div>
-
-              {/* Quick Actions */}
-              <div className="flex space-x-2">
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
-                  onClick={loadGoogleContacts}
-                  disabled={isLoadingContacts}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-500/20 rounded-lg text-green-400 hover:bg-green-500/30 transition-colors disabled:opacity-50"
+            {/* Contacts */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <h3 className="text-sm font-medium text-white/80 mb-3">Recent Contacts</h3>
+              {contacts.map((contact) => (
+                <button
+                  key={contact.id}
+                  onClick={() => {
+                    onChatCreated(contact.id)
+                    onClose()
+                  }}
+                  className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left"
                 >
-                  {isLoadingContacts ? (
-                    <div className="w-4 h-4 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" />
-                  ) : (
-                    <Globe size={16} />
-                  )}
-                  <span className="text-sm">Import from Google</span>
-                </motion.button>
-
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 rounded-lg text-blue-400 hover:bg-blue-500/30 transition-colors"
-                >
-                  <Phone size={16} />
-                  <span className="text-sm">Invite Friends</span>
-                </motion.button>
-              </div>
+                  <img
+                    src={contact.avatar}
+                    alt={contact.name}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-white truncate">{contact.name}</p>
+                    <p className="text-sm text-white/60 truncate">{contact.status}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-
-            {/* Contacts List */}
-            <div className="flex-1 overflow-y-auto">
-              {filteredContacts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-white/60">
-                  <UserPlus size={48} className="mb-4 text-white/30" />
-                  <h3 className="text-lg font-semibold mb-2">No contacts found</h3>
-                  <p className="text-sm text-center">Import contacts from Google or invite friends to get started</p>
-                </div>
-              ) : (
-                <div className="p-4 space-y-2">
-                  {filteredContacts.map((contact) => (
-                    <motion.div
-                      key={contact.id}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleContactSelect(contact.id)}
-                      className={`flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                        selectedContacts.includes(contact.id)
-                          ? 'bg-blue-500/20 border border-blue-500/30'
-                          : 'hover:bg-white/5'
-                      }`}
-                    >
-                      {/* Avatar */}
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/20">
-                          <Image
-                            src={contact.avatar}
-                            alt={contact.name}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {contact.isOnline && (
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
-                        )}
-                      </div>
-
-                      {/* Contact Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold text-white truncate">{contact.name}</h3>
-                          {!contact.isRegistered && (
-                            <span className="px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded-full">
-                              Invite
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-white/60 truncate">{contact.phone}</p>
-                      </div>
-
-                      {/* Selection Indicator */}
-                      {activeTab !== 'contacts' && (
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          selectedContacts.includes(contact.id)
-                            ? 'bg-blue-500 border-blue-500'
-                            : 'border-white/30'
-                        }`}>
-                          {selectedContacts.includes(contact.id) && (
-                            <div className="w-2 h-2 bg-white rounded-full" />
-                          )}
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            {activeTab !== 'contacts' && selectedContacts.length > 0 && (
-              <div className="p-4 border-t border-white/10">
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
-                  onClick={createGroup}
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white font-semibold shadow-lg"
-                >
-                  Create {activeTab === 'groups' ? 'Group' : 'Channel'} ({selectedContacts.length} members)
-                </motion.button>
-              </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 }

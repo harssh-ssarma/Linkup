@@ -24,6 +24,7 @@ import {
   Eye
 } from 'lucide-react'
 import Image from 'next/image'
+import Header from '@/components/layout/Header'
 
 interface UserProfile {
   id: string
@@ -52,6 +53,13 @@ export default function ProfileSection() {
   const handleSignOutClick = () => {
     setShowSignOutConfirm(true)
   }
+  
+  // Custom menu items for Profile section
+  const profileMenuItems = [
+    { icon: Edit3, label: 'Edit Profile', action: () => setShowEditProfile(true) },
+    { icon: Settings, label: 'Settings', action: () => setShowSettings(true) },
+    { icon: LogOut, label: 'Sign Out', action: handleSignOutClick },
+  ]
 
   // Actual sign out function
   const handleConfirmSignOut = async () => {
@@ -121,28 +129,12 @@ export default function ProfileSection() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header with Edit Profile and Settings */}
-      <div className="glass-effect border-b border-white/20 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-white">Profile</h1>
-          <div className="flex space-x-2">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowEditProfile(true)}
-              className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
-            >
-              <Edit3 size={20} />
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowSettings(true)}
-              className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <Settings size={20} />
-            </motion.button>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <Header 
+        tabTitle="Profile"
+        currentTab={activeTab}
+        menuItems={profileMenuItems}
+      />
 
       {/* Profile Content */}
       <div className="flex-1 overflow-y-auto">
@@ -275,7 +267,7 @@ export default function ProfileSection() {
 
           {activeTab === 'stories' && (
             <div className="space-y-4">
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="glass-effect rounded-xl p-6"
@@ -284,7 +276,7 @@ export default function ProfileSection() {
                 <p className="text-white/60 text-center py-8">
                   Stories you save will appear here for you to view later
                 </p>
-              </motion.div>
+              </motion.div> */}
               
               {/* Saved Stories Grid */}
               <div className="grid grid-cols-2 gap-3">

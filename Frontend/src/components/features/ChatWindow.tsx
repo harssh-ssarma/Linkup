@@ -129,7 +129,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
 
   if (!chat) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+      <div className="flex-1 flex items-center justify-center base-gradient">
         <div className="text-center p-4">
           <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6 rounded-full bg-white/10 flex items-center justify-center">
             <Bot size={32} className="sm:w-12 sm:h-12 text-white/50" />
@@ -142,7 +142,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="flex flex-col h-full base-gradient text-white">
       {/* Header */}
       <motion.div 
         initial={{ y: -50, opacity: 0 }}
@@ -200,7 +200,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
               onClick={() => setShowAIAssistant(!showAIAssistant)}
               className={`p-2 rounded-lg text-white transition-colors ${
                 showAIAssistant 
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
+                  ? 'menu-gradient' 
                   : 'hover:bg-white/10'
               }`}
             >
@@ -231,10 +231,10 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
             >
               <div className={`max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-2xl ${
                 message.sender === 'me' 
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
+                  ? 'chat-bubble-sent text-white' 
                   : message.sender === 'ai'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'bg-white/10 text-white backdrop-blur-sm'
+                  ? 'menu-gradient text-white'
+                  : 'chat-bubble-received text-white backdrop-blur-sm'
               }`}>
                 {message.sender === 'ai' && (
                   <div className="flex items-center space-x-1 mb-1">
@@ -295,13 +295,13 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
               <span className="text-white font-semibold text-sm sm:text-base">AI Assistant</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="px-2 sm:px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs sm:text-sm hover:bg-purple-500/30 transition-colors">
+              <button className="px-2 sm:px-3 py-1 bg-white/20 text-white rounded-full text-xs sm:text-sm hover:bg-white/30 transition-colors">
                 Smart Reply
               </button>
-              <button className="px-2 sm:px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs sm:text-sm hover:bg-blue-500/30 transition-colors">
+              <button className="px-2 sm:px-3 py-1 bg-white/20 text-white rounded-full text-xs sm:text-sm hover:bg-white/30 transition-colors">
                 Translate
               </button>
-              <button className="px-2 sm:px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-xs sm:text-sm hover:bg-green-500/30 transition-colors">
+              <button className="px-2 sm:px-3 py-1 bg-white/20 text-white rounded-full text-xs sm:text-sm hover:bg-white/30 transition-colors">
                 Summarize
               </button>
             </div>
