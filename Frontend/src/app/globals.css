@@ -260,33 +260,140 @@
     color: rgba(255, 255, 255, 0.6) !important;
   }
   
-  /* Global Context Menu */
+  /* WhatsApp-style Context Menu - Mobile First */
   .context-menu {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: var(--shadow-lg);
-    @apply rounded-2xl overflow-hidden z-50;
+    position: fixed !important;
+    background: rgba(15, 15, 23, 0.98) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(99, 102, 241, 0.6) !important;
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.8),
+      0 8px 32px rgba(99, 102, 241, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    z-index: 1000 !important;
+    /* Mobile optimized */
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: calc(100vw - 20px) !important;
+    padding: 8px 0 !important;
+    transform-origin: top left !important;
+  }
+  
+  /* Desktop context menu */
+  @media (min-width: 768px) {
+    .context-menu {
+      width: 240px !important;
+      min-width: 240px !important;
+      max-width: 300px !important;
+      padding: 10px 0 !important;
+    }
+  }
+  
+  @keyframes contextMenuSlideIn {
+    from {
+      opacity: 0;
+      transform: scale(0.92) translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
   
   .context-menu-item {
-    @apply w-full flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors text-left text-white;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    outline: none !important;
+    /* Mobile touch optimization */
+    -webkit-tap-highlight-color: transparent !important;
+    touch-action: manipulation !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
+  
+  .context-menu-item:hover,
+  .context-menu-item:focus {
+    background: rgba(99, 102, 241, 0.25) !important;
+    color: rgba(255, 255, 255, 1) !important;
+    transform: translateX(2px) !important;
+  }
+  
+  .context-menu-item:active {
+    background: rgba(99, 102, 241, 0.4) !important;
+    transform: translateX(1px) scale(0.98) !important;
   }
   
   .context-menu-item:first-child {
-    @apply pt-4;
+    border-radius: 12px 12px 0 0;
   }
   
   .context-menu-item:last-child {
-    @apply pb-4;
+    border-radius: 0 0 12px 12px;
   }
   
   .context-menu-icon {
-    @apply w-5 h-5 text-white/80 flex-shrink-0;
+    width: 20px !important;
+    height: 20px !important;
+    color: rgba(99, 102, 241, 0.9) !important;
+    flex-shrink: 0 !important;
+    transition: color 0.2s ease !important;
+  }
+  
+  .context-menu-item:hover .context-menu-icon {
+    color: rgba(255, 255, 255, 1) !important;
   }
   
   .context-menu-text {
-    @apply font-medium text-sm;
+    font-weight: 500 !important;
+    letter-spacing: 0.01em !important;
+    flex: 1 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  .context-menu-item:hover .context-menu-text {
+    color: rgba(255, 255, 255, 1) !important;
+  }
+  
+  /* Special styling for destructive actions */
+  .context-menu-item.destructive {
+    color: rgba(239, 68, 68, 0.95) !important;
+  }
+  
+  .context-menu-item.destructive:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+    color: rgba(239, 68, 68, 1) !important;
+  }
+  
+  .context-menu-item.destructive .context-menu-icon {
+    color: rgba(239, 68, 68, 0.9) !important;
+  }
+  
+  .context-menu-item.destructive:hover .context-menu-icon {
+    color: rgba(239, 68, 68, 1) !important;
+  }
+  
+  .context-menu-item.destructive .context-menu-text {
+    color: rgba(239, 68, 68, 0.95) !important;
+  }
+  
+  .context-menu-item.destructive:hover .context-menu-text {
+    color: rgba(239, 68, 68, 1) !important;
   }
 }
 
@@ -378,7 +485,6 @@ body {
 /* Navigation specific fixes */
 .nav-item {
   -webkit-tap-highlight-color: transparent !important;
-  tap-highlight-color: transparent !important;
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   -khtml-user-select: none !important;

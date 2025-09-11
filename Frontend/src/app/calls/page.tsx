@@ -1,14 +1,14 @@
 'use client';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import AuthCheck from '@/components/auth/AuthCheck';
 import CallSection from '@/components/features/CallSection';
 import LayoutContent from '../LayoutContent';
 
 export default function CallsPage() {
   return (
-    <ProtectedRoute>
+    <AuthCheck>
       <LayoutContent>
         <CallSection />
       </LayoutContent>
-    </ProtectedRoute>
+    </AuthCheck>
   );
 }

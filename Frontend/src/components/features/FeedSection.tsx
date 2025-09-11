@@ -7,6 +7,7 @@ import Image from 'next/image'
 import StoriesBar from '@/components/features/StoriesBar'
 import Header from '@/components/layout/Header'
 import SettingsModal from '@/components/features/SettingsModal'
+import { ContextMenuItem } from '@/components/ui/ContextMenu'
 
 interface Post {
   id: string
@@ -56,7 +57,7 @@ export default function FeedSection() {
   }, [loading, hasMore])
   
   // Custom menu items for Feed section
-  const feedMenuItems = [
+  const feedMenuItems: ContextMenuItem[] = [
     { icon: Camera, label: 'Create Post', action: () => console.log('Create Post') },
     { icon: Users, label: 'Find Friends', action: () => console.log('Find Friends') },
     { icon: Settings, label: 'Feed Settings', action: () => { setSettingsSection('main'); setShowSettings(true) } },

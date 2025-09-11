@@ -67,7 +67,7 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
       if (email) {
         setEmail(email)
         signInWithEmailLink(auth, email, window.location.href)
-          .then((result) => {
+          .then(async (result) => {
             if (typeof window !== 'undefined') {
               window.localStorage.removeItem('emailForSignIn')
               // Store user name if it was saved during signup
@@ -79,7 +79,10 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
               window.history.replaceState({}, document.title, window.location.pathname)
             }
             // Mark session as started and authenticate
-            sessionStorage.setItem('session_started', 'true')
+            if (typeof window !== 'undefined') {
+              const { SessionManager } = await import('@/lib/session')
+              SessionManager.setSession(result.user.uid)
+            }
             
             // Show success message briefly before closing
             setStep('success')
@@ -471,12 +474,30 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
                 )}
               </div>
 
-              <button
-                onClick={() => setStep('signin')}
-                className="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-              >
-                Back to Sign In
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setStep('signin')}
+                  className="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Back to Sign In
+                </button>
+                
+                {/* Development bypass */}
+                <button
+                  onClick={() => {
+                    // Development mode bypass
+                    if (typeof window !== 'undefined') {
+                      const { SessionManager } = require('@/lib/session')
+                      SessionManager.setSession('dev-user-123')
+                    }
+                    onAuthenticated()
+                    onClose()
+                  }}
+                  className="w-full bg-yellow-500 text-white py-3 px-6 rounded-xl font-medium hover:bg-yellow-600 transition-colors text-sm"
+                >
+                  🚀 Development Mode (Skip Email)
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -486,6 +507,22 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
               <Shield className="w-3 h-3 mr-1" />
               We'll never share your information with anyone
             </p>
+            {step === 'signin' && (
+              <button
+                onClick={() => {
+                  // Development mode bypass
+                  if (typeof window !== 'undefined') {
+                    const { SessionManager } = require('@/lib/session')
+                    SessionManager.setSession('dev-user-123')
+                  }
+                  onAuthenticated()
+                  onClose()
+                }}
+                className="mt-4 text-xs text-yellow-600 hover:text-yellow-800 underline"
+              >
+                🚀 Skip for Development
+              </button>
+            )}
           </div>
         </motion.div>
       </motion.div>

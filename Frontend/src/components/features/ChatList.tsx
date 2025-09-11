@@ -32,13 +32,6 @@ interface ChatListProps {
   chats?: Chat[]
 }
 
-interface LongPressMenuProps {
-  chat: Chat
-  isOpen: boolean
-  onClose: () => void
-  position: { x: number; y: number }
-}
-
 // Sample data for demonstration
 const sampleChats: Chat[] = [
   {
@@ -109,57 +102,6 @@ const sampleChats: Chat[] = [
   }
 ]
 
-// Long Press Menu Component
-function LongPressMenu({ chat, isOpen, onClose, position }: LongPressMenuProps) {
-  const menuItems = [
-    { icon: Pin, label: chat.isPinned ? 'Unpin Chat' : 'Pin Chat', action: () => console.log('Pin/Unpin') },
-    { icon: Edit3, label: 'Mark as Unread', action: () => console.log('Mark Unread') },
-    { icon: chat.isMuted ? Bell : BellOff, label: chat.isMuted ? 'Unmute' : 'Mute', action: () => console.log('Mute/Unmute') },
-    { icon: Archive, label: 'Archive Chat', action: () => console.log('Archive') },
-    { icon: Trash2, label: 'Delete Chat', action: () => console.log('Delete'), danger: true },
-  ]
-
-  if (!isOpen) return null
-
-  return (
-    <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="fixed context-menu min-w-[180px]"
-        style={{
-          left: Math.min(position.x, window.innerWidth - 200),
-          top: Math.min(position.y, window.innerHeight - 300)
-        }}
-      >
-        {menuItems.map((item, index) => {
-          const Icon = item.icon
-          return (
-            <motion.button
-              key={item.label}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              onClick={() => {
-                item.action()
-                onClose()
-              }}
-              className={`context-menu-item ${
-                item.danger ? 'text-red-300 hover:text-red-200' : ''
-              }`}
-            >
-              <Icon className="context-menu-icon" />
-              <span className="context-menu-text">{item.label}</span>
-            </motion.button>
-          )
-        })}
-      </motion.div>
-    </>
-  )
-}
-
 export default function ChatList({ activeChat, onChatSelect, chatType, searchQuery, chats = sampleChats }: ChatListProps) {
   const [longPressMenu, setLongPressMenu] = useState<{
     chat: Chat | null
@@ -223,10 +165,24 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              onClick={() => onChatSelect(chat.id)}
+              onClick={(e) => {
+                // Only handle click on desktop (non-touch devices)
+                if (!touchStart) {
+                  onChatSelect(chat.id)
+                }
+              }}
               onTouchStart={(e) => {
                 const touch = e.touches[0]
                 setTouchStart({ x: touch.clientX, y: touch.clientY, time: Date.now() })
+                
+                // Add haptic feedback for mobile
+                if ('vibrate' in navigator) {
+                  setTimeout(() => {
+                    if (touchStart && Date.now() - touchStart.time > 400) {
+                      navigator.vibrate(50) // Short vibration for long press
+                    }
+                  }, 400)
+                }
               }}
               onTouchEnd={(e) => {
                 if (!touchStart) return
@@ -237,21 +193,24 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
                   Math.pow(touchEnd.clientY - touchStart.y, 2)
                 )
                 
-                if (timeDiff > 500 && distance < 10) {
-                  // Long press detected
-                  setLongPressMenu({
-                    chat,
-                    position: { x: touchEnd.clientX, y: touchEnd.clientY }
-                  })
+                if (timeDiff < 350 && distance < 25) {
+                  // Regular tap - select chat
+                  onChatSelect(chat.id)
                 }
                 setTouchStart(null)
               }}
-              onContextMenu={(e) => {
-                e.preventDefault()
-                setLongPressMenu({
-                  chat,
-                  position: { x: e.clientX, y: e.clientY }
-                })
+              onTouchMove={(e) => {
+                if (!touchStart) return
+                const touch = e.touches[0]
+                const distance = Math.sqrt(
+                  Math.pow(touch.clientX - touchStart.x, 2) + 
+                  Math.pow(touch.clientY - touchStart.y, 2)
+                )
+                
+                // Cancel long press if user moves finger too much
+                if (distance > 20) {
+                  setTouchStart(null)
+                }
               }}
               className={`relative p-3 sm:p-4 cursor-pointer transition-all duration-200 rounded-xl group touch-manipulation select-none ${
                 activeChat === chat.id 
@@ -368,18 +327,6 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
           ))}
         </div>
       )}
-      
-      {/* Long Press Menu */}
-      <AnimatePresence>
-        {longPressMenu.chat && (
-          <LongPressMenu
-            chat={longPressMenu.chat}
-            isOpen={!!longPressMenu.chat}
-            onClose={() => setLongPressMenu({ chat: null, position: { x: 0, y: 0 } })}
-            position={longPressMenu.position}
-          />
-        )}
-      </AnimatePresence>
     </div>
   )
 }

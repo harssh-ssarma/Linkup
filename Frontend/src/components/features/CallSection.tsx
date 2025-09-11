@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Phone, Video, PhoneCall, Clock, PhoneOff, Search, MoreVertical, UserPlus, Settings } from 'lucide-react'
 import Header from '@/components/layout/Header'
+import { ContextMenuItem } from '@/components/ui/ContextMenu'
 
 interface CallHistory {
   id: string
@@ -29,7 +30,7 @@ export default function CallSection() {
   const [showSearch, setShowSearch] = useState(false)
 
   // Custom menu items for Calls section
-  const callMenuItems = [
+  const callMenuItems: ContextMenuItem[] = [
     { icon: UserPlus, label: 'Add Contact', action: () => console.log('Add Contact') },
     { icon: Settings, label: 'Call Settings', action: () => console.log('Call Settings') },
   ]

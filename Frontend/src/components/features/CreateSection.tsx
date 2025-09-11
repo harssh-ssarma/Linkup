@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Camera, Video, Image as ImageIcon, Mic, Type, Users, Radio, X, Upload, Settings } from 'lucide-react'
 import Header from '@/components/layout/Header'
+import { ContextMenuItem } from '@/components/ui/ContextMenu'
 
 export default function CreateSection() {
   const [activeCreate, setActiveCreate] = useState<string | null>(null)
@@ -11,7 +12,7 @@ export default function CreateSection() {
   const [selectedMedia, setSelectedMedia] = useState<File[]>([])
 
   // Custom menu items for Create section
-  const createMenuItems = [
+  const createMenuItems: ContextMenuItem[] = [
     { icon: Camera, label: 'Camera Settings', action: () => console.log('Camera Settings') },
     { icon: Settings, label: 'Create Settings', action: () => console.log('Create Settings') },
   ]

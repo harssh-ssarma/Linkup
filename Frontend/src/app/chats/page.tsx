@@ -1,29 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import AuthCheck from '@/components/auth/AuthCheck'
 import ChatSection from '@/components/features/ChatSection'
 import LayoutContent from '../LayoutContent'
 
-function ChatsContent() {
+export default function ChatsPage() {
   const [activeChat, setActiveChat] = useState<string | null>(null)
 
   return (
-    <LayoutContent>
-      <div className="h-full">
-        <ChatSection 
-          activeChat={activeChat} 
-          onChatChange={setActiveChat} 
-        />
-      </div>
-    </LayoutContent>
-  )
-}
-
-export default function ChatsPage() {
-  return (
-    <ProtectedRoute>
-      <ChatsContent />
-    </ProtectedRoute>
+    <AuthCheck>
+      <LayoutContent>
+        <div className="h-full">
+          <ChatSection 
+            activeChat={activeChat} 
+            onChatChange={setActiveChat} 
+          />
+        </div>
+      </LayoutContent>
+    </AuthCheck>
   )
 }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, MoreVertical, Users, Radio, Star, Settings, Smartphone, Plus, MessageCircle, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
+import ContextMenu, { ContextMenuItem, useContextMenu } from '@/components/ui/ContextMenu'
 
 interface HeaderProps {
   // Navigation
@@ -85,9 +86,9 @@ export default function Header({
   onNewChatClick,
   onTitleClick
 }: HeaderProps) {
-  const [showMenu, setShowMenu] = useState(false)
   const [showUniversalSearch, setShowUniversalSearch] = useState(false)
   const [universalSearchQuery, setUniversalSearchQuery] = useState('')
+  const contextMenu = useContextMenu()
 
   // Universal search function
   const handleUniversalSearch = (query: string) => {
@@ -137,7 +138,7 @@ export default function Header({
   const displaySubtitle = subtitle || (chatCount > 0 ? `${chatCount} ${currentTab === 'personal' ? 'conversation' : currentTab?.slice(0, -1)}${chatCount !== 1 ? 's' : ''}` : undefined)
 
   // Default menu items if none provided
-  const defaultMenuItems = [
+  const defaultMenuItems: ContextMenuItem[] = [
     { icon: MessageCircle, label: 'New Chat', action: () => onNewChatClick?.() },
     { icon: Users, label: 'New Group', action: () => console.log('New Group') },
     { icon: Radio, label: 'New Broadcast', action: () => console.log('New Broadcast') },
@@ -146,7 +147,15 @@ export default function Header({
     { icon: Settings, label: 'Settings', action: () => console.log('Settings') },
   ]
 
-  const activeMenuItems = menuItems.length > 0 ? menuItems : defaultMenuItems
+  // Convert menuItems to ContextMenuItem format
+  const contextMenuItems: ContextMenuItem[] = (menuItems && menuItems.length > 0) 
+    ? menuItems.map(item => ({
+        icon: item.icon,
+        label: item.label,
+        action: item.action,
+        destructive: false
+      }))
+    : defaultMenuItems
 
   return (
     <div className="relative">
@@ -253,62 +262,28 @@ export default function Header({
               )}
 
               {/* Menu Button - Always show (when not in search) */}
-              {(activeMenuItems.length > 0) && (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                >
-                  <MoreVertical className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </motion.button>
+              {contextMenuItems.length > 0 && (
+                <div className="relative">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={contextMenu.toggle}
+                    className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  >
+                    <MoreVertical className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </motion.button>
+                  
+                  <ContextMenu
+                    isOpen={contextMenu.isOpen}
+                    onClose={contextMenu.close}
+                    items={contextMenuItems}
+                    position="top-right"
+                  />
+                </div>
               )}
             </div>
           )}
         </div>
       </div>
-
-      {/* Dropdown Menu */}
-      <AnimatePresence>
-        {showMenu && (
-          <>
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 z-40"
-              onClick={() => setShowMenu(false)}
-            />
-            
-            {/* Menu */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className="absolute right-4 sm:right-6 top-full mt-2 w-48 sm:w-52 context-menu"
-            >
-              {activeMenuItems.map((item, index) => {
-                const Icon = item.icon
-                return (
-                  <motion.button
-                    key={item.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => {
-                      item.action()
-                      setShowMenu(false)
-                    }}
-                    className="context-menu-item"
-                  >
-                    <Icon className="context-menu-icon" />
-                    <span className="context-menu-text">
-                      {item.label}
-                    </span>
-                  </motion.button>
-                )
-              })}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

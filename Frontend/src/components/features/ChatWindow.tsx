@@ -23,6 +23,7 @@ import dynamic from 'next/dynamic'
 import Header from '@/components/layout/Header'
 import ContactProfile from '@/components/features/ContactProfile'
 import SettingsModal from '@/components/features/SettingsModal'
+import { ContextMenuItem } from '@/components/ui/ContextMenu'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
@@ -188,6 +189,16 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
     )
   }
 
+  // Chat menu items
+  const chatMenuItems: ContextMenuItem[] = [
+    { icon: Bot, label: 'AI Assistant', action: () => setShowAIAssistant(!showAIAssistant) },
+    { icon: MoreVertical, label: 'View Contact', action: () => setShowContactProfile(true) },
+    { icon: Star, label: 'Add to Favorites', action: () => console.log('Add to Favorites') },
+    { icon: Bell, label: 'Mute Notifications', action: () => { setSettingsSection('notifications'); setShowSettings(true) } },
+    { icon: Shield, label: 'Privacy Settings', action: () => { setSettingsSection('privacy'); setShowSettings(true) } },
+    { icon: Settings, label: 'Chat Settings', action: () => { setSettingsSection('main'); setShowSettings(true) } },
+  ]
+
   return (
     <div className="flex flex-col h-full base-gradient text-white">
       {/* WhatsApp-style Header */}
@@ -200,14 +211,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
           { icon: Phone, label: 'Voice Call', action: () => console.log('Voice Call') },
           { icon: Video, label: 'Video Call', action: () => console.log('Video Call') }
         ]}
-        menuItems={[
-          { icon: Bot, label: 'AI Assistant', action: () => setShowAIAssistant(!showAIAssistant) },
-          { icon: MoreVertical, label: 'View Contact', action: () => setShowContactProfile(true) },
-          { icon: Star, label: 'Add to Favorites', action: () => console.log('Add to Favorites') },
-          { icon: Bell, label: 'Mute Notifications', action: () => { setSettingsSection('notifications'); setShowSettings(true) } },
-          { icon: Shield, label: 'Privacy Settings', action: () => { setSettingsSection('privacy'); setShowSettings(true) } },
-          { icon: Settings, label: 'Chat Settings', action: () => { setSettingsSection('main'); setShowSettings(true) } },
-        ]}
+        menuItems={chatMenuItems}
         onTitleClick={() => setShowContactProfile(true)}
       />
 

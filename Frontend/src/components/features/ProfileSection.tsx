@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { auth } from '@/lib/firebase'
 import { signOut } from 'firebase/auth'
@@ -20,38 +20,8 @@ import {
 import Image from 'next/image'
 import Header from '@/components/layout/Header'
 import SettingsModal from '@/components/features/SettingsModal'
-
-// Simple EditProfile component since it's missing
-const EditProfile = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  if (!isOpen) return null
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-md glass-premium rounded-2xl p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-semibold text-white mb-4">Edit Profile</h3>
-        <p className="text-white/60 text-sm mb-6">Edit profile feature coming soon!</p>
-        <button
-          onClick={onClose}
-          className="w-full btn-primary"
-        >
-          Close
-        </button>
-      </motion.div>
-    </motion.div>
-  )
-}
+import EditProfile from '@/components/features/EditProfile'
+import { ContextMenuItem } from '@/components/ui/ContextMenu'
 
 interface UserProfile {
   id: string
@@ -82,22 +52,46 @@ export default function ProfileSection() {
   }
   
   // Custom menu items for Profile section
-  const profileMenuItems = [
-    { icon: Edit3, label: 'Edit Profile', action: () => setShowEditProfile(true) },
-    { icon: Settings, label: 'Settings', action: () => setShowSettings(true) },
-    { icon: LogOut, label: 'Sign Out', action: handleSignOutClick },
+  const profileMenuItems: ContextMenuItem[] = [
+    { icon: Edit3, label: 'Edit Profile', action: () => {
+      console.log('Edit Profile clicked')
+      setShowEditProfile(true)
+    }},
+    { icon: Settings, label: 'Settings', action: () => {
+      console.log('Settings clicked')
+      setShowSettings(true)
+    }},
+    { icon: LogOut, label: 'Sign Out', action: () => {
+      console.log('Sign Out clicked')
+      handleSignOutClick()
+    }, destructive: true},
   ]
+
+  console.log('ProfileSection profileMenuItems:', profileMenuItems)
+
+  // Debug useEffect
+  useEffect(() => {
+    console.log('ProfileSection - Header props being passed:', {
+      tabTitle: "Profile",
+      currentTab: "posts", 
+      menuItems: profileMenuItems,
+      menuItemsLength: profileMenuItems.length
+    })
+  }, [profileMenuItems])
 
   // Actual sign out function
   const handleConfirmSignOut = async () => {
     setIsSigningOut(true)
     try {
+      // Import SessionManager dynamically
+      const { SessionManager } = await import('@/lib/session')
+      
+      // Clear all session data first
+      SessionManager.clearSession()
+      
+      // Sign out from Firebase
       await signOut(auth)
-      // Clear session data
-      sessionStorage.removeItem('session_started')
-      sessionStorage.removeItem('current_user')
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('user_data')
+      
       // Firebase onAuthStateChanged will handle the redirect to login
     } catch (error) {
       console.error('Error signing out:', error)
@@ -157,11 +151,15 @@ export default function ProfileSection() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <Header 
-        tabTitle="Profile"
-        currentTab={activeTab}
-        menuItems={profileMenuItems}
-      />
+      <div className="relative z-50">
+        <Header 
+          tabTitle="Profile"
+          currentTab="posts"
+          menuItems={profileMenuItems}
+        />
+      </div>
+      
+
 
       {/* Profile Content */}
       <div className="flex-1 overflow-y-auto">

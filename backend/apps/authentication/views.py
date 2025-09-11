@@ -129,3 +129,31 @@ def complete_profile(request):
         return JsonResponse({
             'error': f'Error: {str(e)}'
         }, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def validate_auth(request):
+    """Validate authentication state - simple endpoint to check if backend is running"""
+    try:
+        # For now, just return success if backend is running
+        # In production, you would validate the Firebase token here
+        auth_header = request.headers.get('Authorization', '')
+        
+        if auth_header.startswith('Bearer '):
+            # Token exists, backend is running - return success
+            return JsonResponse({
+                'valid': True,
+                'message': 'Authentication valid'
+            })
+        else:
+            return JsonResponse({
+                'valid': False,
+                'message': 'No token provided'
+            }, status=401)
+            
+    except Exception as e:
+        print(f"Error in validate_auth: {str(e)}")
+        return JsonResponse({
+            'error': f'Error: {str(e)}'
+        }, status=500)

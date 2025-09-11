@@ -634,7 +634,7 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed inset-0 z-50 base-gradient flex flex-col shadow-2xl"
+            className="fixed inset-0 z-50 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 flex flex-col shadow-2xl"
           >
             {/* Header */}
             <Header 
@@ -668,7 +668,7 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
-                    className="base-gradient rounded-2xl p-6 w-full max-w-md border border-indigo-500/30 shadow-2xl"
+                    className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 rounded-2xl p-6 w-full max-w-md border border-indigo-500/30 shadow-2xl"
                   >
                     <div className="text-center mb-6">
                       <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">

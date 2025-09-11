@@ -1,14 +1,14 @@
 'use client';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import AuthCheck from '@/components/auth/AuthCheck';
 import CreateSection from '@/components/features/CreateSection';
 import LayoutContent from '../LayoutContent';
 
 export default function CreatePage() {
   return (
-    <ProtectedRoute>
+    <AuthCheck>
       <LayoutContent>
         <CreateSection />
       </LayoutContent>
-    </ProtectedRoute>
+    </AuthCheck>
   );
 }

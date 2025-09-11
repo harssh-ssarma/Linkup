@@ -1,15 +1,15 @@
 'use client'
 
-import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import AuthCheck from '@/components/auth/AuthCheck'
 import FeedSection from '@/components/features/FeedSection'
 import LayoutContent from '../LayoutContent'
 
 export default function FeedPage() {
   return (
-    <ProtectedRoute>
+    <AuthCheck>
       <LayoutContent>
         <FeedSection />
       </LayoutContent>
-    </ProtectedRoute>
+    </AuthCheck>
   )
 }

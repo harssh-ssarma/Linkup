@@ -1,15 +1,15 @@
 'use client'
 
-import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import AuthCheck from '@/components/auth/AuthCheck'
 import ProfileSection from '@/components/features/ProfileSection'
 import LayoutContent from '../LayoutContent'
 
 export default function ProfilePage() {
   return (
-    <ProtectedRoute>
+    <AuthCheck>
       <LayoutContent>
         <ProfileSection />
       </LayoutContent>
-    </ProtectedRoute>
+    </AuthCheck>
   )
 }
