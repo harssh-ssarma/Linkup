@@ -3,41 +3,53 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { auth } from '@/lib/firebase'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, User, isSignInWithEmailLink } from 'firebase/auth'
+import AuthModal from '@/components/features/AuthModal'
 
 export default function Home() {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [isVerifying, setIsVerifying] = useState(false)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsLoading(false)
-      // Always redirect to chats page for now
-      router.push('/chats')
+    // Check if we're processing an email verification link
+    if (typeof window !== 'undefined' && window.location.href.includes('apiKey=')) {
+      setIsVerifying(true)
+      setLoading(false)
+      return
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser)
+      setLoading(false)
+      
+      if (currentUser) {
+        // User is signed in, redirect to chats immediately
+        router.push('/chats')
+      }
     })
 
-    // Set a timeout to prevent infinite loading
-    const timeout = setTimeout(() => {
-      setIsLoading(false)
-      router.push('/chats')
-    }, 3000)
-
-    return () => {
-      unsubscribe()
-      clearTimeout(timeout)
-    }
+    return () => unsubscribe()
   }, [router])
 
-  if (!isLoading) {
-    return null // Will redirect, so show nothing
+  const handleAuthSuccess = () => {
+    setIsVerifying(false)
+    router.push('/chats')
   }
 
+  // Always show auth modal - no purple background page
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-      </div>
-    </div>
+    <AuthModal 
+      isOpen={true}
+      onClose={() => {
+        if (!loading && !user && !isVerifying) {
+          // Can't close if not authenticated
+          return
+        }
+        setIsVerifying(false)
+      }}
+      onAuthenticated={handleAuthSuccess}
+    />
   )
 }

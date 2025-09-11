@@ -20,9 +20,7 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body className={`${inter.className} h-full antialiased`}>
         <NavigationProvider>
-          <LayoutContent>
-            {children}
-          </LayoutContent>
+          {children}
         </NavigationProvider>
       </body>
     </html>

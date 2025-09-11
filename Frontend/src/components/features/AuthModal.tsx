@@ -2,9 +2,25 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Clock, RefreshCw, User, Shield } from 'lucide-react'
+import { 
+  sendSignInLinkToEmail, 
+  isSignInWithEmailLink, 
+  signInWithEmailLink,
+  ActionCodeSettings 
+} from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, ActionCodeSettings } from 'firebase/auth'
+import { 
+  X, 
+  Mail, 
+  User, 
+  CheckCircle, 
+  AlertCircle, 
+  RefreshCw, 
+  ArrowRight, 
+  ArrowLeft, 
+  Clock, 
+  Shield 
+} from 'lucide-react'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -13,7 +29,7 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
-  const [step, setStep] = useState<'signin' | 'signup' | 'verification'>('signin')
+  const [step, setStep] = useState<'signin' | 'signup' | 'verification' | 'verifying' | 'success'>('signin')
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -41,15 +57,15 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
   // Check if user came from email link
   useEffect(() => {
     if (typeof window !== 'undefined' && isSignInWithEmailLink(auth, window.location.href)) {
+      setStep('verifying')
       setIsLoading(true)
-      // Hide the modal immediately when processing email link
-      onClose()
       
       let email = window.localStorage.getItem('emailForSignIn')
       if (!email) {
         email = window.prompt('Please provide your email for confirmation')
       }
       if (email) {
+        setEmail(email)
         signInWithEmailLink(auth, email, window.location.href)
           .then((result) => {
             if (typeof window !== 'undefined') {
@@ -64,18 +80,23 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
             }
             // Mark session as started and authenticate
             sessionStorage.setItem('session_started', 'true')
-            onAuthenticated()
+            
+            // Show success message briefly before closing
+            setStep('success')
+            setTimeout(() => {
+              onAuthenticated()
+              onClose()
+            }, 2000)
           })
           .catch((error) => {
             console.error('Error signing in with email link:', error)
             setError('Failed to verify email. Please try again.')
             setIsLoading(false)
-            // Show modal again if there's an error
-            // onClose is not called here to keep modal open
+            setStep('signin')
           })
       } else {
         setIsLoading(false)
-        // Show modal again if no email
+        setStep('signin')
       }
     }
   }, [onAuthenticated, onClose])
@@ -196,8 +217,7 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        className="fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center z-50 p-4"
       >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
@@ -212,19 +232,25 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
                 <Mail className="w-8 h-8 text-white" />
               ) : step === 'signup' ? (
                 <User className="w-8 h-8 text-white" />
-              ) : (
+              ) : step === 'success' ? (
                 <CheckCircle className="w-8 h-8 text-white" />
+              ) : (
+                <Mail className="w-8 h-8 text-white" />
               )}
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
               {step === 'signin' && 'Welcome Back'}
               {step === 'signup' && 'Create Account'}
               {step === 'verification' && 'Check Your Email'}
+              {step === 'verifying' && 'Verifying...'}
+              {step === 'success' && 'Welcome to Linkup!'}
             </h2>
             <p className="text-gray-600 text-sm">
               {step === 'signin' && 'Sign in to your account with email'}
               {step === 'signup' && 'Join Linkup to connect with friends'}
               {step === 'verification' && 'We sent you a verification link'}
+              {step === 'verifying' && 'Please wait while we verify your email'}
+              {step === 'success' && 'Email verified successfully! Redirecting to your chats...'}
             </p>
           </div>
 
@@ -257,7 +283,7 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                   required
                 />
               </div>
@@ -319,7 +345,7 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                     required
                   />
                 </div>
@@ -332,7 +358,7 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                     required
                   />
                 </div>
@@ -355,6 +381,54 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
             </motion.form>
           )}
 
+          {/* Email Verifying Step */}
+          {step === 'verifying' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-12"
+            >
+              <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <RefreshCw className="w-12 h-12 text-blue-600 animate-spin" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                Verifying your email...
+              </h3>
+              <p className="text-gray-600 text-sm mb-4">
+                Welcome back! We're signing you in.
+              </p>
+              <div className="flex items-center justify-center space-x-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Success Step */}
+          {step === 'success' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-12"
+            >
+              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                Email Verified Successfully!
+              </h3>
+              <p className="text-gray-600 text-sm mb-4">
+                Welcome to Linkup! Taking you to your messages...
+              </p>
+              <div className="flex items-center justify-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Email Verification Step */}
           {step === 'verification' && (
             <motion.div
@@ -373,10 +447,15 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
                   We sent a verification link to:<br />
                   <strong className="text-gray-800">{email}</strong>
                 </p>
-                <p className="text-gray-500 text-xs">
+                <p className="text-gray-500 text-xs mb-4">
                   Click the link in the email to complete your sign in.
                   It may take a few minutes to arrive.
                 </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-blue-700 text-xs">
+                    💡 Click the link and stay on this tab - verification happens here!
+                  </p>
+                </div>
               </div>
 
               {/* Resend Email */}
