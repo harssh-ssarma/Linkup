@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { auth } from '@/lib/firebase'
 import { signOut } from 'firebase/auth'
@@ -37,6 +37,7 @@ import {
   Scan
 } from 'lucide-react'
 import Header from '@/components/layout/Header'
+import { useNavigation } from '@/context/NavigationContext'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -58,6 +59,21 @@ export default function SettingsModal({ isOpen, onClose, onSignOut }: SettingsMo
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showQRCode, setShowQRCode] = useState(false)
   const [qrCodeMode, setQRCodeMode] = useState<'my-code' | 'scan-code'>('my-code')
+  const { setShowMobileNavigation } = useNavigation()
+  
+  // Hide mobile navigation when settings is open
+  useEffect(() => {
+    if (isOpen) {
+      setShowMobileNavigation(false)
+    } else {
+      setShowMobileNavigation(true)
+    }
+    
+    // Cleanup function to restore navigation when component unmounts
+    return () => {
+      setShowMobileNavigation(true)
+    }
+  }, [isOpen, setShowMobileNavigation])
   
   const [settings, setSettings] = useState({
     // Privacy Settings

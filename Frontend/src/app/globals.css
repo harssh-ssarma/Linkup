@@ -33,7 +33,7 @@
   }
   
   .chat-bubble-received {
-    @apply bg-white/90 text-gray-800 mr-auto;
+    @apply bg-gradient-to-r from-indigo-600/80 to-purple-600/80 text-white mr-auto backdrop-blur-sm border border-white/20;
   }
   
   .floating-button {

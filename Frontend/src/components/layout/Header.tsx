@@ -6,37 +6,133 @@ import { Search, MoreVertical, Users, Radio, Star, Settings, Smartphone, Plus, M
 import Image from 'next/image'
 
 interface HeaderProps {
+  // Navigation
+  showBackButton?: boolean
+  onBackClick?: () => void
+  
+  // Title & Content
+  title?: string
+  subtitle?: string
+  
+  // Universal Search System
+  showSearchButton?: boolean
+  searchPlaceholder?: string
+  onSearchResults?: (query: string, results: any[]) => void
+  searchData?: any[]
+  searchFields?: string[]
+  
+  // Legacy search (for backward compatibility)
   onSearchToggle?: () => void
-  onNewChatClick?: () => void
   searchQuery?: string
   onSearchChange?: (query: string) => void
   showSearch?: boolean
-  currentTab?: string
-  tabTitle?: string
-  chatCount?: number
-  showBackButton?: boolean
-  onBackClick?: () => void
+  
+  // Custom Menu Items (for direct buttons like Call, Video)
+  actionButtons?: Array<{
+    icon: any
+    label: string
+    action: () => void
+    variant?: 'default' | 'primary'
+  }>
+  
+  // Dropdown menu items
   menuItems?: Array<{
     icon: any
     label: string
     action: () => void
   }>
+  
+  // Legacy props for backward compatibility
+  tabTitle?: string
+  currentTab?: string
+  chatCount?: number
+  onNewChatClick?: () => void
 }
 
 export default function Header({ 
+  // Navigation
+  showBackButton = false,
+  onBackClick,
+  
+  // Title & Content  
+  title,
+  subtitle,
+  
+  // Universal Search System
+  showSearchButton = true,
+  searchPlaceholder = 'Search...',
+  onSearchResults,
+  searchData = [],
+  searchFields = ['name'],
+  
+  // Legacy search (for backward compatibility)
   onSearchToggle, 
-  onNewChatClick, 
   searchQuery = '', 
   onSearchChange,
   showSearch = false,
+  
+  // Custom action buttons
+  actionButtons = [],
+  
+  // Dropdown menu items
+  menuItems = [],
+  
+  // Legacy props (for backward compatibility)
+  tabTitle,
   currentTab = 'personal',
-  tabTitle = 'Linkup',
   chatCount = 0,
-  showBackButton = false,
-  onBackClick,
-  menuItems = []
+  onNewChatClick
 }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false)
+  const [showUniversalSearch, setShowUniversalSearch] = useState(false)
+  const [universalSearchQuery, setUniversalSearchQuery] = useState('')
+
+  // Universal search function
+  const handleUniversalSearch = (query: string) => {
+    setUniversalSearchQuery(query)
+    
+    if (!query.trim()) {
+      onSearchResults?.(query, [])
+      return
+    }
+
+    const results = searchData.filter(item => {
+      return searchFields.some(field => {
+        const value = field.split('.').reduce((obj, key) => obj?.[key], item)
+        return value?.toString().toLowerCase().includes(query.toLowerCase())
+      })
+    })
+    
+    onSearchResults?.(query, results)
+  }
+
+  // Handle back button - either close search or go back
+  const handleBackClick = () => {
+    if (showUniversalSearch) {
+      // Close search mode, restore normal header
+      setShowUniversalSearch(false)
+      setUniversalSearchQuery('')
+      onSearchResults?.('', [])
+    } else {
+      // Normal back action
+      onBackClick?.()
+    }
+  }
+
+  // Handle search button click
+  const handleSearchClick = () => {
+    if (onSearchToggle) {
+      // Legacy search behavior
+      onSearchToggle()
+    } else {
+      // New universal search behavior
+      setShowUniversalSearch(true)
+    }
+  }
+
+  // Use new props or fallback to legacy props
+  const displayTitle = title || tabTitle || 'Linkup'
+  const displaySubtitle = subtitle || (chatCount > 0 ? `${chatCount} ${currentTab === 'personal' ? 'conversation' : currentTab?.slice(0, -1)}${chatCount !== 1 ? 's' : ''}` : undefined)
 
   // Default menu items if none provided
   const defaultMenuItems = [
@@ -52,90 +148,105 @@ export default function Header({
 
   return (
     <div className="relative">
-      {/* Header Bar - Mobile First */}
-      <div className="menu-gradient px-4 py-3 sm:px-6 sm:py-4 border-b border-indigo-600/50">
+      {/* Header Bar - Mobile First with Navigation-like Background */}
+      <div className="bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 border-b border-white/20 px-4 py-3 sm:px-6 sm:py-4 shadow-lg">
         <div className="flex items-center justify-between">
-          {/* Left side - Back Button + Dynamic Title with Count */}
-          <div className="flex items-center space-x-3">
-            {/* Back Button - Only show if back functionality is provided */}
-            {showBackButton && onBackClick && (
+          {/* Left side - Back Button + Search Bar OR Title */}
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            {/* Back Button - Show if in search mode OR explicitly requested */}
+            {(showUniversalSearch || showBackButton) && (
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={onBackClick}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                onClick={handleBackClick}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </motion.button>
             )}
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">{tabTitle}</h1>
-              {chatCount > 0 && (
-                <p className="text-xs sm:text-sm text-white/70">
-                  {chatCount} {currentTab === 'personal' ? 'conversation' : currentTab?.slice(0, -1)}{chatCount !== 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Right side - Action Buttons */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Search Button - Only show if search functionality is provided */}
-            {onSearchToggle && (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={onSearchToggle}
-                className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-              >
-                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </motion.button>
-            )}
-
-            {/* New Chat Button - Only show if new chat functionality is provided */}
-            {onNewChatClick && (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={onNewChatClick}
-                className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                title="New Chat"
-              >
-                <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </motion.button>
-            )}
-
-            {/* Menu Button */}
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            >
-              <MoreVertical className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </motion.button>
-          </div>
-        </div>
-
-        {/* Search Input - Expandable */}
-        <AnimatePresence>
-          {showSearch && onSearchChange && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-4"
-            >
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60" size={16} />
+            
+            {/* Search Input (when in search mode) OR Title */}
+            {showUniversalSearch ? (
+              <div className="flex-1 min-w-0">
                 <input
                   type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-indigo-500/50 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/20 transition-all"
+                  value={universalSearchQuery}
+                  onChange={(e) => handleUniversalSearch(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
                   autoFocus
                 />
               </div>
-            </motion.div>
+            ) : (
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl font-semibold text-white truncate">{displayTitle}</h1>
+                {displaySubtitle && (
+                  <p className="text-xs sm:text-sm text-white/70 truncate">
+                    {displaySubtitle}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right side - Action Buttons (Hidden in search mode) */}
+          {!showUniversalSearch && (
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+              {/* Search Button */}
+              {(showSearchButton || onSearchToggle) && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSearchClick}
+                  className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  <Search className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </motion.button>
+              )}
+
+              {/* Action Buttons (Call, Video, etc.) */}
+              {actionButtons.map((button, index) => {
+                const Icon = button.icon
+                return (
+                  <motion.button
+                    key={index}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={button.action}
+                    className={`p-2 sm:p-2.5 rounded-full transition-colors ${
+                      button.variant === 'primary' 
+                        ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                        : 'bg-white/10 hover:bg-white/20 text-white'
+                    }`}
+                    title={button.label}
+                  >
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </motion.button>
+                )
+              })}
+
+              {/* New Chat Button (legacy) */}
+              {onNewChatClick && actionButtons.length === 0 && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onNewChatClick}
+                  className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  title="New Chat"
+                >
+                  <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </motion.button>
+              )}
+
+              {/* Menu Button - Always show (when not in search) */}
+              {(activeMenuItems.length > 0) && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  <MoreVertical className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </motion.button>
+              )}
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       </div>
 
       {/* Dropdown Menu */}

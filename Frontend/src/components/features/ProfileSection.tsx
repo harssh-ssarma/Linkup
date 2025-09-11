@@ -20,6 +20,7 @@ import {
 import Image from 'next/image'
 import Header from '@/components/layout/Header'
 import SettingsModal from '@/components/features/SettingsModal'
+import EditProfile from '@/components/features/EditProfile'
 
 interface UserProfile {
   id: string
@@ -176,7 +177,19 @@ export default function ProfileSection() {
                 </div>
               )}
             </div>
-            <p className="text-white/60">@{profile.username}</p>
+            <p className="text-white/60 mb-2">@{profile.username}</p>
+            
+            {/* Stats */}
+            <div className="flex space-x-6">
+              <div className="text-center">
+                <div className="text-lg font-bold text-white">{formatCount(profile.stats.posts)}</div>
+                <div className="text-xs text-white/60">Posts</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-white">24</div>
+                <div className="text-xs text-white/60">Stories</div>
+              </div>
+            </div>
           </div>
 
           {/* Bio */}
@@ -234,10 +247,6 @@ export default function ProfileSection() {
           {/* Content Area */}
           {activeTab === 'posts' && (
             <div className="space-y-4">
-              <div className="text-center mb-4">
-                <div className="text-xl font-bold text-white">{formatCount(profile.stats.posts)}</div>
-                <div className="text-sm text-white/60">Posts</div>
-              </div>
               <div className="grid grid-cols-3 gap-1">
                 {Array.from({ length: 9 }).map((_, index) => (
                   <motion.div
@@ -313,92 +322,11 @@ export default function ProfileSection() {
         onSignOut={handleConfirmSignOut}
       />
 
-      {/* Edit Profile Modal */}
-      <AnimatePresence>
-        {showEditProfile && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowEditProfile(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", duration: 0.3 }}
-              className="bg-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/10 p-6 w-full max-w-md mx-auto max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-semibold text-white mb-4">Edit Profile</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">Full Name</label>
-                  <input
-                    type="text"
-                    value={profile.name}
-                    onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">Username</label>
-                  <input
-                    type="text"
-                    value={profile.username}
-                    onChange={(e) => setProfile(prev => ({ ...prev, username: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">Bio</label>
-                  <textarea
-                    value={profile.bio}
-                    onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">Location</label>
-                  <input
-                    type="text"
-                    value={profile.location}
-                    onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">Website</label>
-                  <input
-                    type="url"
-                    value={profile.website}
-                    onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="flex space-x-3 pt-4">
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowEditProfile(false)}
-                    className="flex-1 px-4 py-3 bg-slate-700/50 hover:bg-slate-700/70 text-white/80 hover:text-white rounded-xl transition-colors duration-200 font-medium"
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowEditProfile(false)}
-                    className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-200 font-medium"
-                  >
-                    Save Changes
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Edit Profile Component */}
+      <EditProfile 
+        isOpen={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+      />
 
       {/* Sign Out Confirmation Modal */}
       <AnimatePresence>

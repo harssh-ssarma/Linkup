@@ -13,9 +13,12 @@ import {
   Mic, 
   Bot, 
   Check,
-  CheckCheck
+  CheckCheck,
+  Bell,
+  Star
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import Header from '@/components/layout/Header'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
@@ -143,79 +146,23 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
 
   return (
     <div className="flex flex-col h-full base-gradient text-white">
-      {/* Header */}
-      <motion.div 
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="flex-shrink-0 glass-effect border-b border-white/20 p-3 sm:p-4"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={onBack}
-              className="lg:hidden p-2 rounded-lg hover:bg-white/10 text-white flex-shrink-0"
-            >
-              <ArrowLeft size={20} />
-            </motion.button>
-            
-            <div className="relative flex-shrink-0">
-              <img 
-                src={chat.avatar} 
-                alt={chat.name}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-              />
-              {chat.isOnline && (
-                <div className="absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full border-2 border-white"></div>
-              )}
-            </div>
-            
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-white text-sm sm:text-base truncate">{chat.name}</h3>
-              <p className="text-xs sm:text-sm text-white/60 truncate">
-                {chat.status || (chat.isOnline ? 'Online' : 'Last seen recently')}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-lg hover:bg-white/10 text-white"
-            >
-              <Phone size={18} className="sm:w-5 sm:h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-lg hover:bg-white/10 text-white"
-            >
-              <Video size={18} className="sm:w-5 sm:h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setShowAIAssistant(!showAIAssistant)}
-              className={`p-2 rounded-lg text-white transition-colors ${
-                showAIAssistant 
-                  ? 'menu-gradient' 
-                  : 'hover:bg-white/10'
-              }`}
-            >
-              <Bot size={18} className="sm:w-5 sm:h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="hidden sm:block p-2 rounded-lg hover:bg-white/10 text-white"
-            >
-              <MoreVertical size={18} className="sm:w-5 sm:h-5" />
-            </motion.button>
-          </div>
-        </div>
-      </motion.div>
+      {/* WhatsApp-style Header */}
+      <Header 
+        showBackButton={true}
+        onBackClick={onBack}
+        title={chat.name}
+        subtitle={chat.status || (chat.isOnline ? 'Online' : 'Last seen recently')}
+        actionButtons={[
+          { icon: Phone, label: 'Voice Call', action: () => console.log('Voice Call') },
+          { icon: Video, label: 'Video Call', action: () => console.log('Video Call') }
+        ]}
+        menuItems={[
+          { icon: Bot, label: 'AI Assistant', action: () => setShowAIAssistant(!showAIAssistant) },
+          { icon: MoreVertical, label: 'View Contact', action: () => console.log('View Contact') },
+          { icon: Star, label: 'Add to Favorites', action: () => console.log('Add to Favorites') },
+          { icon: Bell, label: 'Mute Notifications', action: () => console.log('Mute') },
+        ]}
+      />
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
@@ -268,7 +215,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
           >
-            <div className="bg-white/10 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-2xl">
+            <div className="bg-gradient-to-r from-indigo-600/60 to-purple-600/60 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-2xl border border-white/20">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>

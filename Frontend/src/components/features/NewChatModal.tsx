@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Search, MessageCircle, Users, Radio } from 'lucide-react'
+import { Users, UserPlus, Bot, MessageCircle, Send, Settings, UserPlus as InviteFriend, RefreshCw, HelpCircle } from 'lucide-react'
+import { useNavigation } from '@/context/NavigationContext'
+import Header from '@/components/layout/Header'
 
 interface NewChatModalProps {
   isOpen: boolean
@@ -10,118 +12,258 @@ interface NewChatModalProps {
   onChatCreated: (chatId: string) => void
 }
 
+interface Contact {
+  id: string
+  name: string
+  avatar: string
+  status: string
+  isOnEcho: boolean
+  phone: string
+}
+
 export default function NewChatModal({ isOpen, onClose, onChatCreated }: NewChatModalProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const { setShowMobileNavigation } = useNavigation()
 
-  const options = [
-    { id: 'new-chat', icon: MessageCircle, label: 'New Chat', description: 'Start a personal conversation' },
-    { id: 'new-group', icon: Users, label: 'New Group', description: 'Create a group chat' },
-    { id: 'new-broadcast', icon: Radio, label: 'New Broadcast', description: 'Send messages to multiple contacts' },
+  // Hide navigation when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setShowMobileNavigation(false)
+    } else {
+      setShowMobileNavigation(true)
+    }
+  }, [isOpen, setShowMobileNavigation])
+
+  const contacts: Contact[] = [
+    { id: 'me', name: 'You (Message yourself)', avatar: 'https://ui-avatars.com/api/?name=You&background=6366f1&color=fff', status: 'Message yourself', isOnEcho: true, phone: '+91 98765 43210' },
+    { id: '1', name: 'Priya Sharma', avatar: 'https://ui-avatars.com/api/?name=Priya+Sharma&background=8b5cf6&color=fff', status: 'Hey there! I am using Echo.', isOnEcho: true, phone: '+91 98765 43211' },
+    { id: '2', name: 'Arjun Patel', avatar: 'https://ui-avatars.com/api/?name=Arjun+Patel&background=ec4899&color=fff', status: 'Available', isOnEcho: true, phone: '+91 98765 43212' },
+    { id: '3', name: 'Sneha Gupta', avatar: 'https://ui-avatars.com/api/?name=Sneha+Gupta&background=10b981&color=fff', status: 'Busy', isOnEcho: true, phone: '+91 98765 43213' },
+    { id: '4', name: 'Rahul Singh', avatar: 'https://ui-avatars.com/api/?name=Rahul+Singh&background=f59e0b&color=fff', status: 'Last seen yesterday', isOnEcho: false, phone: '+91 98765 43214' },
+    { id: '5', name: 'Anita Verma', avatar: 'https://ui-avatars.com/api/?name=Anita+Verma&background=ef4444&color=fff', status: 'Online', isOnEcho: false, phone: '+91 98765 43215' },
+    { id: '6', name: 'Vikram Joshi', avatar: 'https://ui-avatars.com/api/?name=Vikram+Joshi&background=3b82f6&color=fff', status: 'At work', isOnEcho: false, phone: '+91 98765 43216' },
+    { id: '7', name: 'Riya Agarwal', avatar: 'https://ui-avatars.com/api/?name=Riya+Agarwal&background=a855f7&color=fff', status: 'Sleeping', isOnEcho: false, phone: '+91 98765 43217' },
   ]
 
-  const contacts = [
-    { id: '1', name: 'Alice Johnson', avatar: 'https://ui-avatars.com/api/?name=Alice+Johnson&background=6366f1&color=fff', status: 'Online' },
-    { id: '2', name: 'Bob Smith', avatar: 'https://ui-avatars.com/api/?name=Bob+Smith&background=8b5cf6&color=fff', status: 'Last seen 2 hours ago' },
-    { id: '3', name: 'Carol Davis', avatar: 'https://ui-avatars.com/api/?name=Carol+Davis&background=ec4899&color=fff', status: 'Online' },
+  // Filter contacts based on search query
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.phone.includes(searchQuery)
+  )
+
+  // Separate contacts by Echo status
+  const echoContacts = filteredContacts.filter(contact => contact.isOnEcho)
+  const inviteContacts = filteredContacts.filter(contact => !contact.isOnEcho)
+
+  // Quick actions for new chat options
+  const quickActions = [
+    { 
+      id: 'new-group', 
+      label: 'New group', 
+      icon: Users, 
+      action: () => console.log('Create new group') 
+    },
+    { 
+      id: 'new-contact', 
+      label: 'New contact', 
+      icon: UserPlus, 
+      action: () => console.log('Add new contact') 
+    },
+    { 
+      id: 'chat-ai', 
+      label: 'Chat with AI', 
+      icon: Bot, 
+      action: () => {
+        onChatCreated('ai-assistant')
+        onClose()
+      }
+    },
   ]
+
+  // Menu options for header
+  const menuOptions = [
+    { 
+      id: 'contact-settings', 
+      label: 'Contact settings', 
+      icon: Settings, 
+      action: () => console.log('Contact settings') 
+    },
+    { 
+      id: 'invite-friend', 
+      label: 'Invite a friend', 
+      icon: InviteFriend, 
+      action: () => console.log('Invite a friend') 
+    },
+    { 
+      id: 'refresh', 
+      label: 'Refresh', 
+      icon: RefreshCw, 
+      action: () => console.log('Refresh contacts') 
+    },
+    { 
+      id: 'help', 
+      label: 'Help', 
+      icon: HelpCircle, 
+      action: () => console.log('Help') 
+    },
+  ]
+
+  if (!isOpen) return null
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50"
-            onClick={onClose}
-          />
-          
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-x-4 top-20 bottom-20 md:inset-x-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-96 md:h-auto md:max-h-[80vh] menu-gradient rounded-xl shadow-2xl z-50 flex flex-col"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/20">
-              <h2 className="text-lg font-semibold text-white">New Chat</h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-lg hover:bg-white/10 text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'tween', duration: 0.3 }}
+        className="fixed inset-0 z-50 base-gradient flex flex-col"
+      >
+        {/* Header with universal search */}
+        <Header
+          title="Select contact"
+          showBackButton={true}
+          onBackClick={onClose}
+          showSearchButton={true}
+          searchPlaceholder="Search contacts..."
+          onSearchResults={(query: string) => setSearchQuery(query)}
+          searchData={contacts}
+          searchFields={['name', 'phone']}
+          menuItems={menuOptions}
+        />
 
-            {/* Search */}
-            <div className="p-4 border-b border-blue-600">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60" size={16} />
-                <input
-                  type="text"
-                  placeholder="Search contacts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent"
-                />
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Quick Actions */}
+          <div className="p-4 space-y-2">
+            {quickActions.map((action) => {
+              const Icon = action.icon
+              return (
+                <motion.button
+                  key={action.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={action.action}
+                  className="w-full flex items-center space-x-4 p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Icon size={20} className="text-white" />
+                  </div>
+                  <span className="text-white font-medium">{action.label}</span>
+                </motion.button>
+              )
+            })}
+          </div>
+
+          {/* Contacts on Echo */}
+          {echoContacts.length > 0 && (
+            <div className="px-4 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-white/80 font-medium">Contacts on Echo</h2>
+                <span className="text-white/60 text-sm">{echoContacts.length}</span>
               </div>
-            </div>
-
-            {/* Options */}
-            <div className="p-4 border-b border-blue-600">
-              {options.map((option) => {
-                const Icon = option.icon
-                return (
-                  <button
-                    key={option.id}
+              
+              <div className="space-y-1">
+                {echoContacts.map((contact, index) => (
+                  <motion.button
+                    key={contact.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      onChatCreated(option.id)
+                      onChatCreated(contact.id)
                       onClose()
                     }}
-                    className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left"
+                    className="w-full flex items-center space-x-4 p-3 rounded-xl hover:bg-white/10 transition-colors"
                   >
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <Icon size={20} className="text-white" />
+                    <div className="relative">
+                      <img
+                        src={contact.avatar}
+                        alt={contact.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      {contact.id === 'me' && (
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <MessageCircle size={12} className="text-white" />
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <p className="font-medium text-white">{option.label}</p>
-                      <p className="text-sm text-white/60">{option.description}</p>
+                    
+                    <div className="flex-1 text-left">
+                      <h3 className="font-medium text-white">{contact.name}</h3>
+                      <p className="text-sm text-white/60 truncate">{contact.status}</p>
                     </div>
-                  </button>
-                )
-              })}
+                  </motion.button>
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Contacts */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <h3 className="text-sm font-medium text-white/80 mb-3">Recent Contacts</h3>
-              {contacts.map((contact) => (
-                <button
-                  key={contact.id}
-                  onClick={() => {
-                    onChatCreated(contact.id)
-                    onClose()
-                  }}
-                  className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left"
-                >
-                  <img
-                    src={contact.avatar}
-                    alt={contact.name}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white truncate">{contact.name}</p>
-                    <p className="text-sm text-white/60 truncate">{contact.status}</p>
-                  </div>
-                </button>
-              ))}
+          {/* Invite to Echo */}
+          {inviteContacts.length > 0 && (
+            <div className="px-4 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-white/80 font-medium">Invite to Echo</h2>
+                <span className="text-white/60 text-sm">{inviteContacts.length}</span>
+              </div>
+              
+              <div className="space-y-1">
+                {inviteContacts.map((contact, index) => (
+                  <motion.button
+                    key={contact.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: (echoContacts.length + index) * 0.05 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full flex items-center space-x-4 p-3 rounded-xl hover:bg-white/10 transition-colors"
+                  >
+                    <div className="relative">
+                      <img
+                        src={contact.avatar}
+                        alt={contact.name}
+                        className="w-12 h-12 rounded-full object-cover opacity-70"
+                      />
+                    </div>
+                    
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-white">{contact.name}</h3>
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            console.log('Invite', contact.name)
+                          }}
+                          className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full text-white text-xs font-medium flex items-center space-x-1"
+                        >
+                          <Send size={10} />
+                          <span>Invite</span>
+                        </motion.button>
+                      </div>
+                      <p className="text-xs text-white/40 mt-1">Not on Echo • {contact.phone}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
             </div>
-          </motion.div>
-        </>
-      )}
+          )}
+
+          {/* No contacts found */}
+          {filteredContacts.length === 0 && searchQuery && (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-4">
+                <Users size={32} className="text-white/60" />
+              </div>
+              <h3 className="text-white/80 font-medium mb-2">No contacts found</h3>
+              <p className="text-white/60 text-sm text-center">
+                Try searching with a different name or phone number
+              </p>
+            </div>
+          )}
+        </div>
+      </motion.div>
     </AnimatePresence>
   )
 }

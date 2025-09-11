@@ -9,7 +9,7 @@ import { useNavigation } from '@/context/NavigationContext'
 
 export default function Navigation() {
   const pathname = usePathname()
-  const { isSidebarExpanded, setIsSidebarExpanded } = useNavigation()
+  const { isSidebarExpanded, setIsSidebarExpanded, showMobileNavigation } = useNavigation()
 
   const tabs = [
     { id: 'chats', icon: MessageCircle, label: 'Chats', href: '/chats', badge: 3 },
@@ -30,7 +30,7 @@ export default function Navigation() {
     <>
       {/* Desktop Navigation - Left Sidebar */}
       <motion.nav 
-        className={`hidden md:flex fixed left-0 top-0 bottom-0 bg-black/20 backdrop-blur-md border-r border-white/10 z-40 flex-col overflow-hidden`}
+        className={`hidden md:flex fixed left-0 top-0 bottom-0 bg-gradient-to-b from-purple-900 via-blue-900 to-indigo-900 border-r border-white/20 z-40 flex-col overflow-hidden shadow-xl`}
         initial={false}
         animate={{ 
           width: isSidebarExpanded ? 256 : 64,
@@ -155,44 +155,46 @@ export default function Navigation() {
       </motion.nav>
 
       {/* Mobile Navigation - Bottom */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/20 backdrop-blur-md border-t border-white/10 z-50">
-        <div className="flex items-center justify-around px-4 py-3">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id
-            const Icon = tab.icon
-            
-            return (
-              <Link key={tab.id} href={tab.href}>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  className={`relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 px-3 py-2 rounded-lg ${
-                    isActive 
-                      ? 'text-white bg-white/20' 
-                      : 'text-white/60 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {/* Icon */}
-                  <div className="relative">
-                    <Icon size={22} />
+      {showMobileNavigation && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 border-t border-white/20 z-50 shadow-lg h-20">
+          <div className="flex items-center justify-between px-2 py-3 h-full">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id
+              const Icon = tab.icon
+              
+              return (
+                <Link key={tab.id} href={tab.href}>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 py-2 rounded-lg flex-1 mx-1 ${
+                      isActive 
+                        ? 'text-white bg-white/20' 
+                        : 'text-white/60 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {/* Icon */}
+                    <div className="relative">
+                      <Icon size={22} />
+                      
+                      {/* Notification Badge */}
+                      {tab.badge && (
+                        <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                          {tab.badge}
+                        </div>
+                      )}
+                    </div>
                     
-                    {/* Notification Badge */}
-                    {tab.badge && (
-                      <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                        {tab.badge}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Label */}
-                  <span className="text-xs font-medium">
-                    {tab.label}
-                  </span>
-                </motion.button>
-              </Link>
-            )
-          })}
-        </div>
-      </nav>
+                    {/* Label */}
+                    <span className="text-xs font-medium">
+                      {tab.label}
+                    </span>
+                  </motion.button>
+                </Link>
+              )
+            })}
+          </div>
+        </nav>
+      )}
     </>
   )
 }

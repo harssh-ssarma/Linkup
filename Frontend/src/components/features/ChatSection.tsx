@@ -7,6 +7,7 @@ import ChatList from '@/components/features/ChatList'
 import ChatWindow from '@/components/features/ChatWindow'
 import NewChatModal from '@/components/features/NewChatModal'
 import Header from '@/components/layout/Header'
+import { useNavigation } from '@/context/NavigationContext'
 
 interface Chat {
   id: string
@@ -37,6 +38,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   // Use props instead of internal state
   const activeChat = propActiveChat
   const setActiveChat = onChatChange
+  const { setShowMobileNavigation } = useNavigation()
   
   const [chatTab, setChatTab] = useState<'personal' | 'groups' | 'channels'>('personal')
   const [showNewChat, setShowNewChat] = useState(false)
@@ -44,7 +46,16 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   const [showSearch, setShowSearch] = useState(false)
   const [chats, setChats] = useState<Chat[]>([])
 
-  // Tab title mapping
+  // Control mobile navigation based on active chat
+  useEffect(() => {
+    // Hide navigation when in chat, show when in chat list
+    setShowMobileNavigation(!activeChat)
+    
+    // Cleanup function to restore navigation when component unmounts
+    return () => {
+      setShowMobileNavigation(true)
+    }
+  }, [activeChat, setShowMobileNavigation])
   const tabTitles = {
     personal: 'Chats',
     groups: 'Groups', 
@@ -121,7 +132,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   ]
 
   return (
-    <div className="h-full flex base-gradient">
+    <div className={`h-full flex base-gradient ${activeChat ? '' : 'pb-20 md:pb-0'}`}>
       {/* Mobile: Stacked Layout */}
       <div className="flex flex-col md:flex-row w-full h-full">
         
@@ -132,18 +143,20 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
           activeChat 
             ? 'w-full md:w-1/3 lg:w-[400px] xl:w-[420px]' 
             : 'w-full'
-        } base-gradient-light backdrop-blur-lg ${activeChat ? 'border-r border-indigo-600/50' : ''} flex-col`}>
+        } backdrop-blur-lg ${activeChat ? 'border-r border-indigo-600/50' : ''} flex-col`}>
           
           {/* Header */}
           <Header 
-            onSearchToggle={() => setShowSearch(!showSearch)}
+            title={tabTitles[chatTab]}
+            subtitle={`${chats.length} ${chatTab === 'personal' ? 'conversation' : chatTab?.slice(0, -1)}${chats.length !== 1 ? 's' : ''}`}
+            searchPlaceholder={`Search ${chatTab}...`}
+            searchData={chats}
+            searchFields={['name', 'lastMessage']}
+            onSearchResults={(query, results) => {
+              setSearchQuery(query)
+              // You can handle filtered results here if needed
+            }}
             onNewChatClick={() => setShowNewChat(true)}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            showSearch={showSearch}
-            currentTab={chatTab}
-            tabTitle={tabTitles[chatTab]}
-            chatCount={chats.length}
           />
 
           {/* Chat Tabs */}
@@ -186,25 +199,12 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
         </div>
 
         {/* Right Pane - Chat Window */}
-        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} flex-1 base-gradient-light`}>
+        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} flex-1`}>
           {activeChat ? (
-            <div className="flex-1 flex flex-col">
-              {/* Mobile Back Button Header */}
-              <div className="md:hidden p-4 base-gradient-light backdrop-blur-lg border-b border-indigo-600/50">
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setActiveChat(null)}
-                  className="p-2 rounded-full text-white/70 hover:bg-white/10 transition-colors touch-manipulation"
-                >
-                  <ArrowLeft size={20} />
-                </motion.button>
-              </div>
-              
-              <ChatWindow 
-                chat={chats.find(chat => chat.id === activeChat)} 
-                onBack={() => setActiveChat(null)} 
-              />
-            </div>
+            <ChatWindow 
+              chat={chats.find(chat => chat.id === activeChat)} 
+              onBack={() => setActiveChat(null)} 
+            />
           ) : (
             /* Welcome Screen */
             <div className="flex-1 flex items-center justify-center">
