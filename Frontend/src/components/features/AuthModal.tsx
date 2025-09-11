@@ -451,11 +451,6 @@ const AuthModal = ({ isOpen, onClose, onAuthenticated }: AuthModalProps) => {
                   Click the link in the email to complete your sign in.
                   It may take a few minutes to arrive.
                 </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-blue-700 text-xs">
-                    💡 Click the link and stay on this tab - verification happens here!
-                  </p>
-                </div>
               </div>
 
               {/* Resend Email */}
