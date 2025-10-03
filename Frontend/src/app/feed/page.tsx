@@ -1,15 +1,15 @@
 'use client'
 
 import AuthCheck from '@/components/auth/AuthCheck'
-import FeedSection from '@/components/features/FeedSection'
-import LayoutContent from '../LayoutContent'
+import FeedCreateSection from '@/components/features/FeedCreateSection'
+import AppShell from '../AppShell'
 
 export default function FeedPage() {
   return (
     <AuthCheck>
-      <LayoutContent>
-        <FeedSection />
-      </LayoutContent>
+      <AppShell>
+        <FeedCreateSection />
+      </AppShell>
     </AuthCheck>
   )
 }

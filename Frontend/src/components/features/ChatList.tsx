@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { MoreVertical, Pin, Archive, VolumeX, Users, Lock, CheckCircle, Check, CheckCheck, Image as ImageIcon, Mic, Edit3, Trash2, Bell, BellOff } from 'lucide-react'
 import Image from 'next/image'
 
@@ -129,17 +129,22 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
 
   const getStatusIcon = (status?: string) => {
     switch (status) {
-      case 'sent': return <Check size={12} className="text-slate-400" />
-      case 'delivered': return <CheckCheck size={12} className="text-slate-400" />
-      case 'read': return <CheckCheck size={12} className="text-blue-500" />
+      case 'sent':
+        return <Check size={12} className="text-muted" />
+      case 'delivered':
+        return <CheckCheck size={12} className="text-muted" />
+      case 'read':
+        return <CheckCheck size={12} className="text-[var(--accent)]" />
       default: return null
     }
   }
 
   const getMessageIcon = (type?: string) => {
     switch (type) {
-      case 'image': return <ImageIcon size={12} className="text-slate-500" />
-      case 'voice': return <Mic size={12} className="text-slate-500" />
+      case 'image':
+        return <ImageIcon size={12} className="text-muted" />
+      case 'voice':
+        return <Mic size={12} className="text-muted" />
       default: return null
     }
   }
@@ -147,10 +152,10 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
   return (
     <div className="h-full overflow-y-auto">
       {sortedChats.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-full text-white/50 p-6 sm:p-8">
-          <div className="text-4xl sm:text-6xl mb-4">💬</div>
-          <h3 className="text-base sm:text-lg font-semibold mb-2 text-center text-white/70">No {chatType || 'chats'} found</h3>
-          <p className="text-xs sm:text-sm text-center">
+        <div className="flex h-full flex-col items-center justify-center p-6 text-muted sm:p-8">
+          <div className="mb-4 text-4xl sm:text-6xl">💬</div>
+          <h3 className="text-center text-base font-semibold text-foreground sm:text-lg">No {chatType || 'chats'} found</h3>
+          <p className="mt-2 text-center text-xs sm:text-sm">
             {searchQuery 
               ? `No results for "${searchQuery}"`
               : `Start a new ${chatType ? chatType.slice(0, -1) : 'conversation'} to begin chatting`
@@ -212,10 +217,10 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
                   setTouchStart(null)
                 }
               }}
-              className={`relative p-3 sm:p-4 cursor-pointer transition-all duration-200 rounded-xl group touch-manipulation select-none ${
-                activeChat === chat.id 
-                  ? 'bg-white/20 border-2 border-indigo-400' 
-                  : 'bg-white/10 hover:bg-white/20 border-2 border-transparent hover:border-indigo-500/50'
+              className={`relative select-none rounded-xl transition-all duration-200 p-3 sm:p-4 group touch-manipulation ${
+                activeChat === chat.id
+                  ? 'bg-surface-strong'
+                  : 'bg-surface-soft hover:bg-surface-strong'
               }`}
             >
               {/* Pin Indicator */}
@@ -228,7 +233,7 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
               <div className="flex items-center space-x-3 sm:space-x-4">
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl overflow-hidden ring-1 sm:ring-2 ring-white/20">
+                  <div className="h-10 w-10 overflow-hidden rounded-xl border border-subtle bg-surface sm:h-12 sm:w-12 sm:rounded-2xl">
                     <Image
                       src={chat.avatar}
                       alt={chat.name}
@@ -240,16 +245,16 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
                   
                   {/* Online Status */}
                   {chat.isOnline && !chat.isGroup && !chat.isChannel && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[var(--surface)] bg-green-500 sm:h-4 sm:w-4"></div>
                   )}
                   
                   {/* Group/Channel Indicator */}
                   {(chat.isGroup || chat.isChannel) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-5 sm:h-5 bg-indigo-600 rounded-full border-2 border-white flex items-center justify-center">
+                    <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--accent)] sm:h-5 sm:w-5">
                       {chat.isChannel ? (
-                        <CheckCircle size={8} className="text-blue-400 sm:w-2.5 sm:h-2.5" />
+                        <CheckCircle size={8} className="text-inverse sm:h-2.5 sm:w-2.5" />
                       ) : (
-                        <Users size={8} className="text-white sm:w-2.5 sm:h-2.5" />
+                        <Users size={8} className="text-inverse sm:h-2.5 sm:w-2.5" />
                       )}
                     </div>
                   )}
@@ -257,30 +262,30 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
 
                 {/* Chat Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="mb-1 flex items-center justify-between">
                     <div className="flex items-center space-x-1 sm:space-x-2">
-                      <h3 className="font-semibold text-white truncate text-sm sm:text-base">{chat.name}</h3>
+                      <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">{chat.name}</h3>
                       {chat.isVerified && (
-                        <CheckCircle size={12} className="text-blue-400 sm:w-4 sm:h-4" />
+                        <CheckCircle size={12} className="text-[var(--accent)] sm:h-4 sm:w-4" />
                       )}
                       {chat.isMuted && (
-                        <VolumeX size={10} className="text-white/40 sm:w-3.5 sm:h-3.5" />
+                        <VolumeX size={10} className="text-muted sm:h-3.5 sm:w-3.5" />
                       )}
                       {chat.isChannel && (
-                        <Lock size={10} className="text-white/40 sm:w-3.5 sm:h-3.5" />
+                        <Lock size={10} className="text-muted sm:h-3.5 sm:w-3.5" />
                       )}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-white/60 whitespace-nowrap">{chat.timestamp}</span>
+                      <span className="whitespace-nowrap text-xs text-muted">{chat.timestamp}</span>
                       <motion.button
                         whileTap={{ scale: 0.95 }}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-white/10 transition-all touch-manipulation"
+                        className="touch-manipulation rounded-md p-1 opacity-0 transition-all hover:bg-surface-strong group-hover:opacity-100"
                         onClick={(e) => {
                           e.stopPropagation()
                           // Handle more options
                         }}
                       >
-                        <MoreVertical size={12} className="text-white/60 sm:w-3.5 sm:h-3.5" />
+                        <MoreVertical size={12} className="text-muted sm:h-3.5 sm:w-3.5" />
                       </motion.button>
                     </div>
                   </div>
@@ -289,13 +294,13 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
                     <div className="flex items-center space-x-1 flex-1 min-w-0">
                       {getStatusIcon(chat.messageStatus)}
                       {getMessageIcon(chat.messageType)}
-                      <p className="text-xs sm:text-sm text-white/70 truncate">{chat.lastMessage}</p>
+                      <p className="min-w-0 truncate text-xs text-muted sm:text-sm">{chat.lastMessage}</p>
                     </div>
                     
                     <div className="flex items-center space-x-2">
                       {/* Participant Count for Groups/Channels */}
                       {(chat.isGroup || chat.isChannel) && chat.participantCount && (
-                        <span className="text-xs text-white/50 hidden sm:inline">
+                        <span className="hidden text-xs text-muted sm:inline">
                           {formatParticipantCount(chat.participantCount)}
                         </span>
                       )}
@@ -305,10 +310,10 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className={`min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 px-1.5 sm:px-2 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                            chat.isMuted 
-                              ? 'bg-white/20 text-white/60' 
-                              : 'menu-gradient text-white shadow-lg'
+                          className={`flex h-4 min-w-[16px] flex-shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-semibold sm:h-5 sm:min-w-[20px] sm:px-2 ${
+                            chat.isMuted
+                              ? 'border border-subtle bg-surface-strong text-muted'
+                              : 'menu-gradient shadow-soft'
                           }`}
                         >
                           {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
@@ -319,7 +324,7 @@ export default function ChatList({ activeChat, onChatSelect, chatType, searchQue
                   
                   {/* Last Seen for Personal Chats */}
                   {!chat.isGroup && !chat.isChannel && chat.lastSeen && !chat.isOnline && (
-                    <p className="text-xs text-white/50 mt-1 hidden sm:block">{chat.lastSeen}</p>
+                    <p className="mt-1 hidden text-xs text-muted sm:block">{chat.lastSeen}</p>
                   )}
                 </div>
               </div>

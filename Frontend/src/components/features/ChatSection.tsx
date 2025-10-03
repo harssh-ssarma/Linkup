@@ -6,6 +6,7 @@ import { Search, Plus, MoreVertical, Phone, Video, Users, Radio, Settings, Arrow
 import ChatList from '@/components/features/ChatList'
 import ChatWindow from '@/components/features/ChatWindow'
 import NewChatModal from '@/components/features/NewChatModal'
+import SettingsModal from '@/components/features/SettingsModal'
 import Header from '@/components/layout/Header'
 import { useNavigation } from '@/context/NavigationContext'
 
@@ -45,6 +46,8 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [chats, setChats] = useState<Chat[]>([])
+  const [openChats, setOpenChats] = useState<string[]>([])
+  const [showSettings, setShowSettings] = useState(false)
 
   // Control mobile navigation based on active chat
   useEffect(() => {
@@ -125,6 +128,20 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
     setChats(mockChats[chatTab] || [])
   }, [chatTab])
 
+  const handleChatSelect = (chatId: string) => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      if (!openChats.includes(chatId)) {
+        setOpenChats([...openChats, chatId])
+      }
+    } else {
+      setActiveChat(chatId)
+    }
+  }
+
+  const handleCloseChat = (chatId: string) => {
+    setOpenChats(openChats.filter(id => id !== chatId))
+  }
+
   const chatTabs = [
     { id: 'personal', label: 'Personal', icon: Phone },
     { id: 'groups', label: 'Groups', icon: Users },
@@ -132,18 +149,13 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   ]
 
   return (
-    <div className={`h-full flex chat-container-premium ${activeChat ? '' : 'pb-20 md:pb-0'}`}>
-      {/* Mobile: Stacked Layout */}
-      <div className="flex flex-col md:flex-row w-full h-full">
+    <div className="base-gradient chat-container-premium flex h-full">
+      <div className="flex w-full h-full">
         
         {/* Left Pane - Chat List */}
         <div className={`${
           activeChat ? 'hidden md:flex' : 'flex'
-        } ${
-          activeChat 
-            ? 'w-full md:w-1/3 lg:w-[400px] xl:w-[420px]' 
-            : 'w-full'
-        } glass-card-premium ${activeChat ? 'border-r border-white/10' : ''} flex-col`}>
+        } w-full md:w-80 lg:w-96 flex-col border-r border-subtle`}>
           
           {/* Header */}
           <Header 
@@ -154,28 +166,34 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
             searchFields={['name', 'lastMessage']}
             onSearchResults={(query, results) => {
               setSearchQuery(query)
-              // You can handle filtered results here if needed
             }}
             onNewChatClick={() => setShowNewChat(true)}
+            menuItems={[
+              { icon: Users, label: 'New Group', action: () => console.log('New Group') },
+              { icon: Radio, label: 'New Broadcast', action: () => console.log('New Broadcast') },
+              { icon: Settings, label: 'Settings', action: () => setShowSettings(true) }
+            ]}
           />
 
           {/* Chat Tabs */}
-          <div className="px-4 py-3 border-b border-indigo-600/50">
-            <div className="flex space-x-1 bg-white/10 rounded-lg p-1">
+          <div className="px-4 py-3">
+            <div className="flex space-x-1 rounded-lg bg-surface-soft/80 p-1">
               {chatTabs.map((tab) => {
                 const isActive = chatTab === tab.id
                 const Icon = tab.icon
                 
                 return (
                   <motion.button
+                    type="button"
                     key={tab.id}
                     onClick={() => setChatTab(tab.id as any)}
-                    className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 py-2 sm:py-3 px-2 sm:px-4 rounded-2xl transition-all duration-200 text-xs sm:text-sm ${
-                      isActive 
-                        ? 'glass-card-premium text-white nav-item active' 
-                        : 'text-white/60 hover:text-white nav-item'
+                    className={`nav-item flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs transition-all duration-200 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm ${
+                      isActive
+                        ? 'active glass-card-premium text-foreground'
+                        : 'text-muted hover:bg-surface-strong/70 hover:text-foreground'
                     }`}
                     whileTap={{ scale: 0.98 }}
+                    aria-pressed={isActive}
                   >
                     <Icon size={14} className="sm:hidden" />
                     <Icon size={16} className="hidden sm:block" />
@@ -189,8 +207,8 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
           {/* Chat List */}
           <div className="flex-1 overflow-hidden">
             <ChatList 
-              activeChat={activeChat}
-              onChatSelect={setActiveChat}
+              activeChat={openChats[0] || activeChat}
+              onChatSelect={handleChatSelect}
               chatType={chatTab}
               searchQuery={searchQuery}
               chats={chats}
@@ -198,27 +216,43 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
           </div>
         </div>
 
-        {/* Right Pane - Chat Window */}
+        {/* Right Pane - Chat Windows */}
         <div className={`${activeChat ? 'flex' : 'hidden md:flex'} ${activeChat ? 'fixed inset-0 z-50 md:relative md:z-auto' : ''} flex-1`}>
-          {activeChat ? (
+          {activeChat && typeof window !== 'undefined' && window.innerWidth < 768 ? (
             <ChatWindow 
               chat={chats.find(chat => chat.id === activeChat)} 
               onBack={() => setActiveChat(null)} 
             />
+          ) : openChats.length > 0 ? (
+            <div className="flex w-full h-full">
+              {openChats.map((chatId, index) => (
+                <div 
+                  key={chatId} 
+                  className={`flex-1 ${index > 0 ? 'border-l border-subtle' : ''}`}
+                  style={{ minWidth: '400px', maxWidth: openChats.length === 1 ? '100%' : '50%' }}
+                >
+                  <ChatWindow 
+                    chat={chats.find(chat => chat.id === chatId)} 
+                    onBack={() => handleCloseChat(chatId)}
+                  />
+                </div>
+              ))}
+            </div>
           ) : (
             /* Welcome Screen */
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex flex-1 items-center justify-center">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center px-4 sm:px-8 max-w-md"
+                className="max-w-md px-4 text-center sm:px-8"
               >
-                <div className="w-16 h-16 sm:w-24 sm:h-24 menu-gradient rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
-                  <MessageCircle size={32} className="text-white sm:w-12 sm:h-12" />
+                <div className="glass-card mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full sm:mb-8 sm:h-24 sm:w-24">
+                  <MessageCircle size={32} className="text-[var(--accent)] sm:h-12 sm:w-12" />
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">Welcome to Linkup</h2>
-                <p className="text-white/70 mb-6 sm:mb-8 text-base sm:text-lg">Select a conversation to start messaging</p>
+                <h2 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">Welcome to Linkup</h2>
+                <p className="mb-6 text-base text-muted sm:mb-8 sm:text-lg">Select a conversation to start messaging</p>
                 <motion.button
+                  type="button"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowNewChat(true)}
                   className="btn-primary text-sm sm:text-lg touch-manipulation flex items-center space-x-2 sm:space-x-3 mx-auto"
@@ -240,6 +274,12 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
           setActiveChat(chatId)
           setShowNewChat(false)
         }}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
       />
     </div>
   )

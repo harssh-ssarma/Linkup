@@ -27,27 +27,22 @@ export default function ContextMenu({
   className = ''
 }: ContextMenuProps) {
   const positionClasses = {
-    'top-right': 'right-4 sm:right-6 top-full mt-3',
-    'top-left': 'left-4 sm:left-6 top-full mt-3',
-    'bottom-right': 'right-4 sm:right-6 bottom-full mb-3',
-    'bottom-left': 'left-4 sm:left-6 bottom-full mb-3'
+    'top-right': 'right-0 top-full mt-1',
+    'top-left': 'left-0 top-full mt-1',
+    'bottom-right': 'right-0 bottom-full mb-1',
+    'bottom-left': 'left-0 bottom-full mb-1'
   }
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-[998] bg-black/20 backdrop-blur-sm"
-            onClick={onClose}
-          />
           
           {/* Menu */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: -8 }}
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -8 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
             transition={{ 
               type: "spring", 
               damping: 25, 
@@ -55,7 +50,7 @@ export default function ContextMenu({
               duration: 0.2 
             }}
             className={`absolute ${positionClasses[position]} context-menu ${className}`}
-            style={{ zIndex: 999 }}
+            style={{ zIndex: 9999 }}
           >
             {items.map((item, index) => {
               const Icon = item.icon

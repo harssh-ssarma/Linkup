@@ -17,7 +17,16 @@ import {
   Bell,
   Star,
   Shield,
-  Settings
+  Settings,
+  Image as ImageIcon,
+  FileText,
+  MapPin,
+  User,
+  Camera,
+  Music,
+  BarChart3,
+  Calendar,
+  X
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import Header from '@/components/layout/Header'
@@ -85,6 +94,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
 
   const [newMessage, setNewMessage] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showAttachMenu, setShowAttachMenu] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showContactProfile, setShowContactProfile] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -149,13 +159,13 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
 
   if (!chat) {
     return (
-      <div className="flex-1 flex items-center justify-center base-gradient">
-        <div className="text-center p-4">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6 rounded-full bg-white/10 flex items-center justify-center">
-            <Bot size={32} className="sm:w-12 sm:h-12 text-white/50" />
+      <div className="base-gradient flex flex-1 items-center justify-center">
+        <div className="glass-card mx-4 max-w-sm rounded-2xl p-6 text-center sm:p-8">
+          <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border border-subtle bg-surface-soft sm:mb-6 sm:h-32 sm:w-32">
+            <Bot size={32} className="text-muted sm:h-12 sm:w-12" />
           </div>
-          <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Welcome to Linkup</h3>
-          <p className="text-sm sm:text-base text-white/60">Select a chat to start messaging</p>
+          <h3 className="text-lg font-semibold text-foreground sm:text-xl">Welcome to Linkup</h3>
+          <p className="mt-2 text-sm text-muted sm:text-base">Select a chat to start messaging</p>
         </div>
       </div>
     )
@@ -200,7 +210,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
   ]
 
   return (
-    <div className="flex flex-col h-full base-gradient text-white">
+    <div className="base-gradient flex h-full flex-col">
       {/* WhatsApp-style Header */}
       <Header 
         showBackButton={true}
@@ -216,7 +226,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
       />
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+  <div className="scrollbar-hide flex-1 space-y-3 overflow-y-auto p-3 sm:space-y-4 sm:p-4">
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
@@ -227,31 +237,33 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
               transition={{ duration: 0.3 }}
               className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-2xl ${
-                message.sender === 'me' 
-                  ? 'chat-bubble-sent text-white' 
+              <div className={`max-w-[78%] rounded-2xl px-3 py-2 sm:max-w-[72%] sm:px-4 sm:py-3 lg:max-w-[68%] ${
+                message.sender === 'me'
+                  ? 'chat-bubble-sent'
                   : message.sender === 'ai'
-                  ? 'accent-gradient text-white glass-card-premium'
-                  : 'chat-bubble-received text-white backdrop-blur-sm'
+                  ? 'chat-bubble-ai glass-card-premium'
+                  : 'chat-bubble-received'
               }`}>
                 {message.sender === 'ai' && (
-                  <div className="flex items-center space-x-1 mb-1">
-                    <Bot size={12} className="sm:w-4 sm:h-4" />
-                    <span className="text-xs opacity-80">AI Assistant</span>
+                  <div className="mb-1 flex items-center space-x-1 text-muted">
+                    <Bot size={12} className="text-[var(--accent)] sm:h-4 sm:w-4" />
+                    <span className="text-xs font-medium">AI Assistant</span>
                   </div>
                 )}
-                <p className="text-sm sm:text-base leading-relaxed">{message.content}</p>
-                <div className="flex items-center justify-between mt-1 sm:mt-2">
+                <p className="leading-relaxed text-sm sm:text-base">{message.content}</p>
+                <div className="mt-1 flex items-center justify-between sm:mt-2">
                   <p className={`text-xs ${
-                    message.sender === 'me' || message.sender === 'ai' ? 'text-white/70' : 'text-white/60'
+                    message.sender === 'me' || message.sender === 'ai'
+                      ? 'text-inverse opacity-80'
+                      : 'text-muted'
                   }`}>
                     {message.timestamp}
                   </p>
                   {message.sender === 'me' && message.status && (
-                    <div className="flex items-center text-white/70">
+                    <div className="flex items-center gap-1 text-inverse opacity-80">
                       {message.status === 'sent' && <Check size={12} />}
                       {message.status === 'delivered' && <CheckCheck size={12} />}
-                      {message.status === 'read' && <CheckCheck size={12} className="text-blue-300" />}
+                      {message.status === 'read' && <CheckCheck size={12} className="text-[var(--accent)]" />}
                     </div>
                   )}
                 </div>
@@ -266,11 +278,11 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
           >
-            <div className="bg-gradient-to-r from-indigo-600/60 to-purple-600/60 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-2xl border border-white/20">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="rounded-lg border border-subtle bg-surface-soft px-3 py-2 text-muted shadow-soft sm:rounded-2xl sm:px-4 sm:py-3">
+              <div className="flex space-x-2">
+                <span className="typing-indicator-dot" />
+                <span className="typing-indicator-dot" />
+                <span className="typing-indicator-dot" />
               </div>
             </div>
           </motion.div>
@@ -286,20 +298,20 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="flex-shrink-0 glass-effect border-t border-white/20 p-3 sm:p-4"
+            className="glass-effect flex-shrink-0 border-t border-subtle p-3 sm:p-4"
           >
-            <div className="flex items-center space-x-2 mb-3">
-              <Bot className="text-purple-400" size={20} />
-              <span className="text-white font-semibold text-sm sm:text-base">AI Assistant</span>
+            <div className="mb-3 flex items-center space-x-2">
+              <Bot className="text-[var(--accent)]" size={20} />
+              <span className="text-sm font-semibold text-foreground sm:text-base">AI Assistant</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="px-2 sm:px-3 py-1 bg-white/20 text-white rounded-full text-xs sm:text-sm hover:bg-white/30 transition-colors">
+              <button type="button" className="chip-button">
                 Smart Reply
               </button>
-              <button className="px-2 sm:px-3 py-1 bg-white/20 text-white rounded-full text-xs sm:text-sm hover:bg-white/30 transition-colors">
+              <button type="button" className="chip-button">
                 Translate
               </button>
-              <button className="px-2 sm:px-3 py-1 bg-white/20 text-white rounded-full text-xs sm:text-sm hover:bg-white/30 transition-colors">
+              <button type="button" className="chip-button">
                 Summarize
               </button>
             </div>
@@ -311,86 +323,197 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
       <motion.div 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative flex-shrink-0 glass-effect border-t border-white/20 p-3 sm:p-4"
+        className="relative flex-shrink-0 glass-effect border-t border-subtle p-3 sm:p-4"
       >
-        <div className="flex items-end space-x-2 sm:space-x-3">
-          {/* Attachment Button */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2.5 rounded-full glass-card hover:bg-white/10 transition-colors text-white/60 hover:text-white flex-shrink-0"
-          >
-            <Paperclip size={20} />
-          </motion.button>
-          
-          {/* Message Input Container */}
-          <div className="flex-1 relative min-h-[44px] flex items-center">
-            <div className="w-full relative">
-              <textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type a message..."
-                rows={1}
-                style={{ height: 'auto', minHeight: '44px', maxHeight: '120px' }}
-                className="w-full message-input text-sm sm:text-base resize-none pr-12 py-3 leading-5"
-              />
-              
-              {/* Emoji Button inside input */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-              >
-                <Smile size={20} />
-              </motion.button>
-            </div>
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Message Input Container with Attachment & Emoji inside */}
+          <div className="flex-1 relative flex items-center h-[46px] rounded-3xl border border-subtle bg-surface shadow-soft overflow-hidden">
+            {/* Attachment Button inside input (left) */}
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => {
+                e.preventDefault()
+                setShowAttachMenu(!showAttachMenu)
+              }}
+              onMouseDown={(e) => e.preventDefault()}
+              className="flex-shrink-0 p-2.5 text-muted hover:bg-[rgba(37,99,235,0.12)] hover:text-[var(--accent)] transition-all rounded-xl ml-1 cursor-pointer"
+              aria-label="Attach file"
+            >
+              <Paperclip size={18} />
+            </motion.button>
+            
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type a message..."
+              className="flex-1 resize-none bg-transparent px-2 text-sm text-foreground placeholder:text-muted !outline-none !border-none focus:!outline-none focus:!ring-0 focus:!border-transparent sm:text-base"
+            />
+            
+            {/* Emoji Button inside input (right) */}
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => {
+                e.preventDefault()
+                setShowEmojiPicker(!showEmojiPicker)
+              }}
+              onMouseDown={(e) => e.preventDefault()}
+              className="flex-shrink-0 p-2.5 text-muted hover:bg-[rgba(37,99,235,0.12)] hover:text-[var(--accent)] transition-all rounded-xl mr-1 cursor-pointer"
+              aria-label="Emoji"
+            >
+              <Smile size={18} />
+            </motion.button>
           </div>
           
-          {/* Send/Mic Button - WhatsApp Style */}
+          {/* Send/Mic Button */}
           {newMessage.trim() ? (
             <motion.button
+              type="button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={sendMessage}
-              className="p-3 rounded-full btn-primary shadow-lg flex-shrink-0 min-w-[48px] min-h-[48px] flex items-center justify-center"
+              className="flex-shrink-0 h-[46px] w-[46px] flex items-center justify-center rounded-full bg-[var(--accent)] text-inverse shadow-soft hover:bg-[var(--accent-strong)] transition-colors"
+              aria-label="Send message"
             >
               <Send size={20} className="ml-0.5" />
             </motion.button>
           ) : (
             <motion.button
+              type="button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-3 rounded-full glass-card hover:bg-white/10 transition-colors text-white/60 hover:text-white flex-shrink-0 min-w-[48px] min-h-[48px] flex items-center justify-center"
+              className="flex-shrink-0 h-[46px] w-[46px] flex items-center justify-center rounded-full bg-surface-soft border border-subtle text-muted hover:text-foreground transition-colors shadow-soft"
+              aria-label="Record voice message"
             >
               <Mic size={20} />
             </motion.button>
           )}
         </div>
         
-        {/* Simple Clean Emoji Picker */}
+        {/* Attachment Menu */}
+        <AnimatePresence>
+          {showAttachMenu && (
+            <>
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setShowAttachMenu(false)}
+              />
+              <div className="context-menu" style={{ position: 'absolute', bottom: '100%', left: '12px', marginBottom: '8px', width: '320px', padding: '8px 0' }}>
+                <div className="grid grid-cols-3 gap-2 p-2">
+                <button
+                  onClick={() => { console.log('Photos'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(147,51,234,0.16)]">
+                    <ImageIcon size={20} className="text-purple-500" />
+                  </div>
+                  <span className="text-xs font-medium">Photos</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Document'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(59,130,246,0.16)]">
+                    <FileText size={20} className="text-blue-500" />
+                  </div>
+                  <span className="text-xs font-medium">Document</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Camera'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(236,72,153,0.16)]">
+                    <Camera size={20} className="text-pink-500" />
+                  </div>
+                  <span className="text-xs font-medium">Camera</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Location'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(34,197,94,0.16)]">
+                    <MapPin size={20} className="text-green-500" />
+                  </div>
+                  <span className="text-xs font-medium">Location</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Contact'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(249,115,22,0.16)]">
+                    <User size={20} className="text-orange-500" />
+                  </div>
+                  <span className="text-xs font-medium">Contact</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Audio'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(14,165,233,0.16)]">
+                    <Music size={20} className="text-sky-500" />
+                  </div>
+                  <span className="text-xs font-medium">Audio</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Poll'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(234,179,8,0.16)]">
+                    <BarChart3 size={20} className="text-yellow-500" />
+                  </div>
+                  <span className="text-xs font-medium">Poll</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Event'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(239,68,68,0.16)]">
+                    <Calendar size={20} className="text-red-500" />
+                  </div>
+                  <span className="text-xs font-medium">Event</span>
+                </button>
+                
+                <button
+                  onClick={() => { console.log('Video'); setShowAttachMenu(false) }}
+                  className="context-menu-item !flex-col !items-center !gap-2 !p-3 !rounded-xl"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(168,85,247,0.16)]">
+                    <Video size={20} className="text-purple-400" />
+                  </div>
+                  <span className="text-xs font-medium">Video</span>
+                </button>
+                </div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+        
+        {/* Emoji Picker */}
         <AnimatePresence>
           {showEmojiPicker && (
-            <div className="fixed inset-0 z-50 flex items-end justify-center">
-              {/* Backdrop */}
+            <>
               <div 
-                className="absolute inset-0 bg-black/20" 
+                className="fixed inset-0 z-40" 
                 onClick={() => setShowEmojiPicker(false)}
               />
-              
-              {/* Emoji Picker */}
               <motion.div
-                initial={{ y: 300, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 300, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="relative mb-20 mx-4 rounded-2xl overflow-hidden"
-                style={{
-                  background: '#1a1b23',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)'
-                }}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-full right-3 mb-2 z-50 overflow-hidden rounded-2xl border border-subtle shadow-deep"
               >
                 <EmojiPicker
                   onEmojiClick={(emojiData) => {
@@ -403,21 +526,17 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
                   searchDisabled={false}
                 />
               </motion.div>
-            </div>
+            </>
           )}
         </AnimatePresence>
       </motion.div>
 
-      {/* Settings Modal */}
-      <SettingsModal 
+    
+      { <SettingsModal 
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        onSignOut={() => {
-          setShowSettings(false)
-          // Handle sign out
-        }}
         initialSection={settingsSection}
-      />
+      /> }
     </div>
   )
 }

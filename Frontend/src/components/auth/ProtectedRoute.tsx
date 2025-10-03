@@ -2,39 +2,20 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthRequired } from '@/hooks/useAuth'
+import { useAuth } from '@/context/AuthContext'
 
-interface ProtectedRouteProps {
-  children: React.ReactNode
-  fallback?: React.ReactNode
-}
-
-export default function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { user, loading, isUnauthenticated } = useAuthRequired()
+  const { user, loading } = useAuth()
 
   useEffect(() => {
-    if (isUnauthenticated) {
+    if (!loading && !user) {
       router.push('/')
     }
-  }, [isUnauthenticated, router])
+  }, [loading, user, router])
 
-  if (loading) {
-    return (
-      fallback || (
-        <div className="flex items-center justify-center h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/30 mx-auto mb-4"></div>
-            <p className="text-white/80">Loading...</p>
-          </div>
-        </div>
-      )
-    )
-  }
-
-  if (isUnauthenticated) {
-    return null // Will redirect
-  }
+  if (loading) return null
+  if (!user) return null
 
   return <>{children}</>
 }

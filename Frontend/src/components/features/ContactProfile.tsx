@@ -1,10 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
-  ArrowLeft, 
-  MoreVertical, 
   Share, 
   UserPlus, 
   Info, 
@@ -28,6 +26,8 @@ import {
   Play
 } from 'lucide-react'
 import Image from 'next/image'
+import Header from '@/components/layout/Header'
+import type { ContextMenuItem } from '@/components/ui/ContextMenu'
 
 interface ContactProfileProps {
   contact: {
@@ -82,81 +82,38 @@ const sampleMedia: MediaItem[] = [
 ]
 
 export default function ContactProfile({ contact, onBack }: ContactProfileProps) {
-  const [showMenu, setShowMenu] = useState(false)
   const [activeTab, setActiveTab] = useState<'media' | 'docs' | 'links'>('media')
 
-  const menuItems = [
-    { icon: Share, label: 'Share Contact', action: () => { console.log('Share'); setShowMenu(false) } },
-    { icon: UserPlus, label: 'Add to Contacts', action: () => { console.log('Add Contact'); setShowMenu(false) } },
-    { icon: Info, label: 'More Information', action: () => { console.log('More Info'); setShowMenu(false) } },
+  const menuItems: ContextMenuItem[] = [
+    { icon: Share, label: 'Share Contact', action: () => console.log('Share') },
+    { icon: UserPlus, label: 'Add to Contacts', action: () => console.log('Add Contact') },
+    { icon: Info, label: 'More Information', action: () => console.log('More Info') },
   ]
 
   return (
-    <div className="h-full flex flex-col base-gradient relative">
+    <div className="base-gradient relative flex h-full flex-col">
       {/* Header */}
-      <div className="header-premium px-4 py-3 relative z-10">
-        <div className="flex items-center justify-between">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={onBack}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </motion.button>
-
-          <div className="relative">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            >
-              <MoreVertical className="w-5 h-5 text-white" />
-            </motion.button>
-
-            {/* Dropdown Menu */}
-            <AnimatePresence>
-              {showMenu && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowMenu(false)} 
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    className="absolute right-0 top-full mt-2 w-48 context-menu z-50"
-                  >
-                    {menuItems.map((item, index) => {
-                      const Icon = item.icon
-                      return (
-                        <motion.button
-                          key={item.label}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          onClick={item.action}
-                          className="context-menu-item"
-                        >
-                          <Icon className="context-menu-icon" />
-                          <span className="context-menu-text">{item.label}</span>
-                        </motion.button>
-                      )
-                    })}
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
+      <Header
+        showBackButton
+        onBackClick={onBack}
+        title={contact.name}
+        subtitle={
+          contact.isOnline
+            ? 'Online'
+            : contact.lastSeen
+              ? `Last seen ${contact.lastSeen}`
+              : contact.phone
+        }
+        showSearchButton={false}
+        menuItems={menuItems}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         {/* Profile Section */}
         <div className="px-6 py-8 text-center">
-          <div className="relative inline-block mb-4">
-            <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-white/20">
+          <div className="relative mb-4 inline-block">
+            <div className="h-32 w-32 overflow-hidden rounded-full ring-4 ring-[var(--accent)] ring-opacity-30">
               <Image
                 src={contact.avatar}
                 alt={contact.name}
@@ -166,80 +123,80 @@ export default function ContactProfile({ contact, onBack }: ContactProfileProps)
               />
             </div>
             {contact.isOnline && (
-              <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
+              <div className="absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-[var(--surface)] bg-green-500"></div>
             )}
           </div>
 
           <div className="mb-2">
-            <h1 className="text-2xl font-bold text-white mb-1">{contact.name}</h1>
+            <h1 className="mb-1 text-2xl font-bold text-foreground">{contact.name}</h1>
             {contact.isVerified && (
               <div className="flex items-center justify-center space-x-1">
-                <span className="text-blue-400 text-sm">Verified</span>
+                <span className="text-sm text-[var(--accent)]">Verified</span>
               </div>
             )}
           </div>
 
-          <p className="text-white/70 text-sm mb-1">{contact.phone}</p>
+          <p className="mb-1 text-sm text-muted">{contact.phone}</p>
           {contact.lastSeen && !contact.isOnline && (
-            <p className="text-white/50 text-xs">Last seen {contact.lastSeen}</p>
+            <p className="text-xs text-muted">Last seen {contact.lastSeen}</p>
           )}
           {contact.isOnline && (
-            <p className="text-green-400 text-xs">Online</p>
+            <p className="text-xs text-green-400">Online</p>
           )}
 
           {contact.bio && (
-            <div className="mt-4 p-3 bg-white/10 rounded-lg">
-              <p className="text-white/80 text-sm">{contact.bio}</p>
+            <div className="mt-4 rounded-lg border border-subtle bg-surface-soft p-3">
+              <p className="text-sm text-muted">{contact.bio}</p>
             </div>
           )}
         </div>
 
         {/* Action Buttons */}
-        <div className="px-6 mb-6">
+        <div className="mb-6 px-6">
           <div className="grid grid-cols-3 gap-4">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center space-y-2 p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors"
+              className="glass-card flex flex-col items-center space-y-2 rounded-2xl p-4 text-muted transition-colors hover:bg-surface-strong hover:text-foreground"
             >
-              <Phone className="w-6 h-6 text-green-400" />
-              <span className="text-white text-xs font-medium">Audio</span>
+              <Phone className="h-6 w-6 text-green-400" />
+              <span className="text-xs font-medium">Audio</span>
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center space-y-2 p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors"
+              className="glass-card flex flex-col items-center space-y-2 rounded-2xl p-4 text-muted transition-colors hover:bg-surface-strong hover:text-foreground"
             >
-              <Video className="w-6 h-6 text-blue-400" />
-              <span className="text-white text-xs font-medium">Video</span>
+              <Video className="h-6 w-6 text-blue-400" />
+              <span className="text-xs font-medium">Video</span>
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center space-y-2 p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors"
+              className="glass-card flex flex-col items-center space-y-2 rounded-2xl p-4 text-muted transition-colors hover:bg-surface-strong hover:text-foreground"
             >
-              <MessageCircle className="w-6 h-6 text-purple-400" />
-              <span className="text-white text-xs font-medium">Message</span>
+              <MessageCircle className="h-6 w-6 text-purple-400" />
+              <span className="text-xs font-medium">Message</span>
             </motion.button>
           </div>
         </div>
 
         {/* Contact Info */}
-        <div className="px-6 mb-6">
-          <h3 className="text-white font-semibold mb-4">Contact Info</h3>
+        <div className="mb-6 px-6">
+          <h3 className="mb-4 font-semibold text-foreground">Contact Info</h3>
           <div className="space-y-3">
             {contact.email && (
-              <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
-                <Mail className="w-5 h-5 text-white/60" />
+              <div className="flex items-center space-x-3 rounded-lg border border-subtle bg-surface-soft p-3">
+                <Mail className="h-5 w-5 text-muted" />
                 <div>
-                  <p className="text-white text-sm">{contact.email}</p>
-                  <p className="text-white/50 text-xs">Email</p>
+                  <p className="text-sm text-foreground">{contact.email}</p>
+                  <p className="text-xs text-muted">Email</p>
                 </div>
               </div>
             )}
             {contact.location && (
-              <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
-                <MapPin className="w-5 h-5 text-white/60" />
+              <div className="flex items-center space-x-3 rounded-lg border border-subtle bg-surface-soft p-3">
+                <MapPin className="h-5 w-5 text-muted" />
                 <div>
-                  <p className="text-white text-sm">{contact.location}</p>
-                  <p className="text-white/50 text-xs">Location</p>
+                  <p className="text-sm text-foreground">{contact.location}</p>
+                  <p className="text-xs text-muted">Location</p>
                 </div>
               </div>
             )}
@@ -247,10 +204,10 @@ export default function ContactProfile({ contact, onBack }: ContactProfileProps)
         </div>
 
         {/* Media Section */}
-        <div className="px-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-semibold">Media</h3>
-            <span className="text-white/60 text-sm">{sampleMedia.length} items</span>
+        <div className="mb-6 px-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Media</h3>
+            <span className="text-sm text-muted">{sampleMedia.length} items</span>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -259,7 +216,7 @@ export default function ContactProfile({ contact, onBack }: ContactProfileProps)
                 key={item.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="cursor-pointer aspect-square bg-white/10 rounded-lg overflow-hidden"
+                className="aspect-square cursor-pointer overflow-hidden rounded-lg border border-subtle bg-surface-soft"
               >
                 <Image
                   src={item.url}
@@ -275,50 +232,50 @@ export default function ContactProfile({ contact, onBack }: ContactProfileProps)
 
         {/* Settings */}
         <div className="px-6 pb-6">
-          <h3 className="text-white font-semibold mb-4">Settings</h3>
+          <h3 className="mb-4 font-semibold text-foreground">Settings</h3>
           <div className="space-y-2">
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-white"
+              className="glass-effect flex w-full items-center justify-between rounded-lg border border-subtle bg-surface-soft p-3 text-foreground transition-colors hover:bg-surface-strong"
             >
               <div className="flex items-center space-x-3">
-                <Bell className="w-5 h-5" />
+                <Bell className="h-5 w-5 text-muted" />
                 <span className="font-medium">Mute Notifications</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/40" />
+              <ChevronRight className="h-4 w-4 text-muted" />
             </motion.button>
             
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-white"
+              className="glass-effect flex w-full items-center justify-between rounded-lg border border-subtle bg-surface-soft p-3 text-foreground transition-colors hover:bg-surface-strong"
             >
               <div className="flex items-center space-x-3">
-                <Star className="w-5 h-5" />
+                <Star className="h-5 w-5 text-muted" />
                 <span className="font-medium">Add to Starred</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/40" />
+              <ChevronRight className="h-4 w-4 text-muted" />
             </motion.button>
             
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-red-300"
+              className="glass-effect flex w-full items-center justify-between rounded-lg border border-subtle bg-surface-soft p-3 text-[var(--danger)] transition-colors hover:bg-surface-strong"
             >
               <div className="flex items-center space-x-3">
-                <UserX className="w-5 h-5" />
+                <UserX className="h-5 w-5" />
                 <span className="font-medium">Block Contact</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/40" />
+              <ChevronRight className="h-4 w-4 text-muted" />
             </motion.button>
             
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-red-300"
+              className="glass-effect flex w-full items-center justify-between rounded-lg border border-subtle bg-surface-soft p-3 text-[var(--danger)] transition-colors hover:bg-surface-strong"
             >
               <div className="flex items-center space-x-3">
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="h-5 w-5" />
                 <span className="font-medium">Delete Chat</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/40" />
+              <ChevronRight className="h-4 w-4 text-muted" />
             </motion.button>
           </div>
         </div>

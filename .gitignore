@@ -46,3 +46,7 @@ logs/
 # Dependencies
 package-lock.json
 yarn.lock
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md

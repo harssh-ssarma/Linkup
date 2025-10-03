@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Camera, X, Edit3, Phone, Link, Plus } from 'lucide-react'
 import { useNavigation } from '@/context/NavigationContext'
 import Header from '@/components/layout/Header'
@@ -59,10 +60,7 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'tween', duration: 0.3 }}
-      className="fixed inset-0 z-50 flex flex-col"
-      style={{
-        background: 'linear-gradient(135deg, var(--surface-dark) 0%, var(--surface-main) 30%, var(--primary-950) 60%, var(--accent-950) 90%, var(--surface-dark) 100%)'
-      }}
+      className="fixed inset-0 z-50 flex flex-col bg-[rgba(15,23,42,0.6)] backdrop-blur-2xl"
     >
       {/* Header - No search and menu buttons */}
       <Header 
@@ -76,23 +74,25 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {/* Profile Photo Section */}
-        <div className="flex flex-col items-center py-8 px-4">
-          <div className="relative group">
-            <img
+        <div className="flex flex-col items-center px-4 py-8">
+          <div className="group relative">
+            <Image
               src={avatar}
               alt="Profile"
-              className="w-32 h-32 rounded-full object-cover border-4 border-white/20"
+              width={128}
+              height={128}
+              className="h-32 w-32 rounded-full border-4 border-[rgba(37,99,235,0.2)] object-cover shadow-soft"
             />
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handlePhotoChange}
-              className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-[rgba(15,23,42,0.55)] opacity-0 transition-opacity group-hover:opacity-100"
             >
-              <Camera size={24} className="text-white" />
+              <Camera size={24} className="text-[color:var(--text-inverse)]" />
             </motion.button>
           </div>
           
-          <div className="flex space-x-4 mt-4">
+          <div className="mt-4 flex gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handlePhotoChange}
@@ -103,7 +103,7 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handleRemovePhoto}
-              className="px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-lg text-white text-sm font-medium transition-colors"
+              className="rounded-full border border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.12)] px-4 py-2 text-sm font-semibold text-[#ef4444] transition-colors hover:bg-[rgba(239,68,68,0.2)]"
             >
               Remove
             </motion.button>
@@ -111,17 +111,17 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
         </div>
 
         {/* Profile Details */}
-        <div className="px-4 space-y-6">
+        <div className="space-y-6 px-4 pb-8">
           {/* Name Section */}
-          <div className="glass-card p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white/60 text-sm">Name</span>
+          <div className="glass-card rounded-2xl p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm uppercase tracking-wide text-muted">Name</span>
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowNameEdit(!showNameEdit)}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-strong"
               >
-                <Edit3 size={16} className="text-white/60" />
+                <Edit3 size={16} />
               </motion.button>
             </div>
             {showNameEdit ? (
@@ -131,24 +131,26 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => setShowNameEdit(false)}
                 onKeyPress={(e) => e.key === 'Enter' && setShowNameEdit(false)}
-                className="w-full bg-transparent text-white text-lg font-medium focus:outline-none border-b border-white/20 pb-1"
+                className="w-full border-b border-subtle bg-transparent pb-1 text-lg font-semibold text-foreground focus:outline-none"
+                aria-label="Edit name"
+                placeholder="Enter your name"
                 autoFocus
               />
             ) : (
-              <p className="text-white text-lg font-medium">{name}</p>
+              <p className="text-lg font-semibold text-foreground">{name}</p>
             )}
           </div>
 
           {/* About Section */}
-          <div className="glass-card p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white/60 text-sm">About</span>
+          <div className="glass-card rounded-2xl p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm uppercase tracking-wide text-muted">About</span>
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAboutEdit(!showAboutEdit)}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-strong"
               >
-                <Edit3 size={16} className="text-white/60" />
+                <Edit3 size={16} />
               </motion.button>
             </div>
             {showAboutEdit ? (
@@ -156,66 +158,65 @@ export default function EditProfile({ isOpen, onClose }: EditProfileProps) {
                 value={about}
                 onChange={(e) => setAbout(e.target.value)}
                 onBlur={() => setShowAboutEdit(false)}
-                className="w-full bg-transparent text-white resize-none focus:outline-none border-b border-white/20 pb-1"
+                className="w-full resize-none border-b border-subtle bg-transparent pb-1 text-base text-foreground focus:outline-none"
+                aria-label="Edit about section"
+                placeholder="Tell us about yourself"
                 rows={2}
                 autoFocus
               />
             ) : (
-              <p className="text-white">{about}</p>
+              <p className="text-base text-foreground">{about}</p>
             )}
           </div>
 
           {/* Phone Section */}
-          <div className="glass-card p-4">
+          <div className="glass-card rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-white/60 text-sm block mb-1">Phone</span>
-                <p className="text-white text-lg">{phone}</p>
+                <span className="mb-1 block text-sm uppercase tracking-wide text-muted">Phone</span>
+                <p className="text-lg font-medium text-foreground">{phone}</p>
               </div>
-              <Phone size={20} className="text-white/60" />
+              <Phone size={20} className="text-muted" />
             </div>
           </div>
 
           {/* Links Section */}
-          <div className="glass-card p-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-white/60 text-sm">Links</span>
+          <div className="glass-card rounded-2xl p-4">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-sm uppercase tracking-wide text-muted">Links</span>
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAddLink}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-strong"
               >
-                <Plus size={16} className="text-white/60" />
+                <Plus size={16} />
               </motion.button>
             </div>
             
             <div className="space-y-3">
               {links.map((link) => (
-                <div key={link.id} className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg border border-white/10">
-                  <Link size={16} className="text-white/60" />
+                <div key={link.id} className="flex items-center gap-3 rounded-xl border border-subtle bg-surface-soft p-3">
+                  <Link size={16} className="text-[color:var(--accent)]" />
                   <div className="flex-1">
-                    <p className="text-white font-medium text-sm">{link.title}</p>
-                    <p className="text-white/60 text-xs truncate">{link.url}</p>
+                    <p className="text-sm font-medium text-foreground">{link.title}</p>
+                    <p className="truncate text-xs text-muted">{link.url}</p>
                   </div>
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setLinks(links.filter(l => l.id !== link.id))}
-                    className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+                    className="rounded-lg p-1 text-muted transition-colors hover:bg-surface-strong"
                   >
-                    <X size={14} className="text-white/60" />
+                    <X size={14} />
                   </motion.button>
                 </div>
               ))}
               
               {links.length === 0 && (
-                <p className="text-white/40 text-sm text-center py-4">No links added</p>
+                <p className="py-4 text-center text-sm text-muted">No links added</p>
               )}
             </div>
           </div>
         </div>
-
-        {/* Bottom Spacing */}
-        <div className="h-8"></div>
       </div>
     </motion.div>
   )

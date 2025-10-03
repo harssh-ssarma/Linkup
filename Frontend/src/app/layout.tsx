@@ -1,8 +1,9 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import { NavigationProvider } from '@/context/NavigationContext'
+import { ThemeProvider } from '@/context/ThemeContext'
+import { AuthProvider } from '@/context/AuthContext'
 import { APP_NAME, APP_DESCRIPTION } from '@/constants'
-import LayoutContent from './LayoutContent'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,9 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} h-full antialiased`}>
-        <NavigationProvider>
-          {children}
-        </NavigationProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <NavigationProvider>
+              {children}
+            </NavigationProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )

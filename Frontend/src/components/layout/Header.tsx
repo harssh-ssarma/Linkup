@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, MoreVertical, Users, Radio, Star, Settings, Smartphone, Plus, MessageCircle, ArrowLeft } from 'lucide-react'
-import Image from 'next/image'
+import { motion } from 'framer-motion'
+import { Search, MoreVertical, Users, Radio, Star, Settings, Smartphone, Plus, ArrowLeft } from 'lucide-react'
 import ContextMenu, { ContextMenuItem, useContextMenu } from '@/components/ui/ContextMenu'
 
 interface HeaderProps {
@@ -139,73 +138,78 @@ export default function Header({
 
   // Default menu items if none provided
   const defaultMenuItems: ContextMenuItem[] = [
-    { icon: MessageCircle, label: 'New Chat', action: () => onNewChatClick?.() },
     { icon: Users, label: 'New Group', action: () => console.log('New Group') },
     { icon: Radio, label: 'New Broadcast', action: () => console.log('New Broadcast') },
     { icon: Smartphone, label: 'Linked Devices', action: () => console.log('Linked Devices') },
     { icon: Star, label: 'Starred Messages', action: () => console.log('Starred Messages') },
-    { icon: Settings, label: 'Settings', action: () => console.log('Settings') },
+    { icon: Settings, label: 'Settings', action: () => console.log('Settings') }
   ]
 
-  // Convert menuItems to ContextMenuItem format
-  const contextMenuItems: ContextMenuItem[] = (menuItems && menuItems.length > 0) 
-    ? menuItems.map(item => ({
-        icon: item.icon,
-        label: item.label,
-        action: item.action,
-        destructive: false
-      }))
-    : defaultMenuItems
+  // Convert menuItems to ContextMenuItem format and add search if enabled
+  const contextMenuItems: ContextMenuItem[] = [
+    ...(showSearchButton || onSearchToggle ? [{
+      icon: Search,
+      label: 'Search',
+      action: handleSearchClick,
+      destructive: false
+    }] : []),
+    ...(menuItems.length > 0
+      ? menuItems.map(item => ({
+          icon: item.icon,
+          label: item.label,
+          action: item.action,
+          destructive: false
+        }))
+      : defaultMenuItems)
+  ]
 
   return (
     <div className="relative">
       {/* Header Bar - Mobile First with Navigation-like Background */}
-      <div className="header-premium px-4 py-3 sm:px-6 sm:py-4">
-        <div className="flex items-center justify-between">
+      <div className="header-premium flex min-h-[64px] items-center px-4 py-3 text-foreground sm:min-h-[72px] sm:px-6 sm:py-4">
+        <div className="flex w-full items-center justify-between">
           {/* Left side - Back Button + Search Bar OR Title */}
-          <div className="flex items-center space-x-3 flex-1 min-w-0">
-            {/* Back Button - Show if in search mode OR explicitly requested */}
+          <div className="flex min-w-0 flex-1 items-center space-x-3">
             {(showUniversalSearch || showBackButton) && (
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={handleBackClick}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0"
+                className="flex-shrink-0 rounded-full border border-subtle bg-surface-soft p-2 text-muted transition-colors hover:bg-surface-strong hover:text-foreground"
               >
-                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </motion.button>
             )}
-            
-            {/* Search Input (when in search mode) OR Title */}
+
             {showUniversalSearch ? (
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <input
                   type="text"
                   value={universalSearchQuery}
                   onChange={(e) => handleUniversalSearch(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full bg-white/10 rounded-full px-4 py-2 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="message-input w-full rounded-full px-4 py-2 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/35"
                   autoFocus
                 />
               </div>
             ) : (
               <div className="min-w-0 flex-1">
                 {onTitleClick ? (
-                  <button 
+                  <button
                     onClick={onTitleClick}
-                    className="text-left w-full hover:opacity-80 transition-opacity"
+                    className="w-full text-left transition-opacity hover:opacity-100"
                   >
-                    <h1 className="text-lg sm:text-xl font-semibold text-white truncate">{displayTitle}</h1>
+                    <h1 className="truncate text-lg font-semibold text-foreground sm:text-xl">{displayTitle}</h1>
                     {displaySubtitle && (
-                      <p className="text-xs sm:text-sm text-white/70 truncate">
+                      <p className="truncate text-xs text-muted sm:text-sm">
                         {displaySubtitle}
                       </p>
                     )}
                   </button>
                 ) : (
                   <>
-                    <h1 className="text-lg sm:text-xl font-semibold text-white truncate">{displayTitle}</h1>
+                    <h1 className="truncate text-lg font-semibold text-foreground sm:text-xl">{displayTitle}</h1>
                     {displaySubtitle && (
-                      <p className="text-xs sm:text-sm text-white/70 truncate">
+                      <p className="truncate text-xs text-muted sm:text-sm">
                         {displaySubtitle}
                       </p>
                     )}
@@ -215,63 +219,49 @@ export default function Header({
             )}
           </div>
 
-          {/* Right side - Action Buttons (Hidden in search mode) */}
           {!showUniversalSearch && (
-            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-              {/* Search Button */}
-              {(showSearchButton || onSearchToggle) && (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSearchClick}
-                  className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                >
-                  <Search className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </motion.button>
-              )}
-
-              {/* Action Buttons (Call, Video, etc.) */}
+            <div className="flex flex-shrink-0 items-center space-x-2 sm:space-x-3">
               {actionButtons.map((button, index) => {
                 const Icon = button.icon
+                const variantClasses =
+                  button.variant === 'primary'
+                    ? 'btn-primary text-inverse'
+                    : 'border border-subtle bg-surface-soft text-muted hover:bg-surface-strong hover:text-foreground'
+
                 return (
                   <motion.button
                     key={index}
                     whileTap={{ scale: 0.95 }}
                     onClick={button.action}
-                    className={`p-2 sm:p-2.5 rounded-full transition-colors ${
-                      button.variant === 'primary' 
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white' 
-                        : 'bg-white/10 hover:bg-white/20 text-white'
-                    }`}
+                    className={`rounded-full p-2 transition-colors sm:p-2.5 ${variantClasses}`}
                     title={button.label}
                   >
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </motion.button>
                 )
               })}
 
-              {/* New Chat Button (legacy) */}
               {onNewChatClick && actionButtons.length === 0 && (
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={onNewChatClick}
-                  className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  className="rounded-full border border-subtle bg-surface-soft p-2 text-muted transition-colors hover:bg-surface-strong hover:text-foreground sm:p-2.5"
                   title="New Chat"
                 >
-                  <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
                 </motion.button>
               )}
 
-              {/* Menu Button - Always show (when not in search) */}
               {contextMenuItems.length > 0 && (
                 <div className="relative">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={contextMenu.toggle}
-                    className="p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                    className="rounded-full border border-subtle bg-surface-soft p-2 text-muted transition-colors hover:bg-surface-strong hover:text-foreground sm:p-2.5"
                   >
-                    <MoreVertical className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    <MoreVertical className="h-5 w-5 sm:h-6 sm:w-6" />
                   </motion.button>
-                  
+
                   <ContextMenu
                     isOpen={contextMenu.isOpen}
                     onClose={contextMenu.close}

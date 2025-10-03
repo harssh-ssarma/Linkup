@@ -1,14 +1,14 @@
 'use client';
 import AuthCheck from '@/components/auth/AuthCheck';
 import CallSection from '@/components/features/CallSection';
-import LayoutContent from '../LayoutContent';
+import AppShell from '../AppShell';
 
 export default function CallsPage() {
   return (
     <AuthCheck>
-      <LayoutContent>
+      <AppShell>
         <CallSection />
-      </LayoutContent>
+      </AppShell>
     </AuthCheck>
   );
 }

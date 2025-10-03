@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { auth } from '@/lib/firebase'
-import { signOut } from 'firebase/auth'
+import { useState, useEffect, useRef, ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
+
 import { 
   User, 
   Shield, 
@@ -36,8 +35,10 @@ import {
   RotateCcw,
   Scan
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import Header from '@/components/layout/Header'
 import { useNavigation } from '@/context/NavigationContext'
+import { useAuth } from '@/context/AuthContext'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -53,6 +54,21 @@ type SettingsSection =
   | 'notifications' 
   | 'storage' 
   | 'help'
+  | 'avatar'
+  | 'chats'
+  | 'language'
+  | 'invite'
+
+interface SettingItem {
+  id: string
+  title: string
+  subtitle?: string
+  icon: LucideIcon
+  action: () => void
+  toggle?: boolean
+  danger?: boolean
+  trailing?: ReactNode
+}
 
 export default function SettingsModal({ isOpen, onClose, onSignOut, initialSection = 'main' }: SettingsModalProps) {
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main')
@@ -60,13 +76,22 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showQRCode, setShowQRCode] = useState(false)
   const [qrCodeMode, setQRCodeMode] = useState<'my-code' | 'scan-code'>('my-code')
-  const { setShowMobileNavigation } = useNavigation()
+  const { setShowMobileNavigation, isSidebarExpanded } = useNavigation()
+  const { logout } = useAuth()
+  const router = useRouter()
+  const [isDesktop, setIsDesktop] = useState(false)
+  const [copyFeedback, setCopyFeedback] = useState<'copied' | 'failed' | null>(null)
+  const copyFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inviteLink = 'https://linkup.app/invite'
+  const inviteMessage = `Hey! I'm on Linkup – the next-gen messaging app. Join me here: ${inviteLink}`
+  const desktopNavWidth = isSidebarExpanded ? 256 : 64
   
-  // Hide mobile navigation when settings is open
+  // Hide mobile navigation when settings is open (mobile only)
   useEffect(() => {
-    if (isOpen) {
+    const isMobile = window.innerWidth < 768
+    if (isOpen && isMobile) {
       setShowMobileNavigation(false)
-    } else {
+    } else if (!isOpen) {
       setShowMobileNavigation(true)
     }
     
@@ -75,6 +100,39 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
       setShowMobileNavigation(true)
     }
   }, [isOpen, setShowMobileNavigation])
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentSection(initialSection)
+      setShowQRCode(false)
+    }
+  }, [initialSection, isOpen])
+
+  useEffect(() => {
+    const updateIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768)
+    }
+
+    updateIsDesktop()
+    window.addEventListener('resize', updateIsDesktop)
+
+    return () => {
+      window.removeEventListener('resize', updateIsDesktop)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timeoutId = copyFeedbackTimeout.current
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+        if (copyFeedbackTimeout.current === timeoutId) {
+          copyFeedbackTimeout.current = null
+        }
+      }
+    }
+  }, [copyFeedback])
   
   const [settings, setSettings] = useState({
     // Privacy Settings
@@ -99,14 +157,13 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
     fontSize: 'medium'
   })
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     setIsSigningOut(true)
     try {
-      await signOut(auth)
-      if (onSignOut) {
-        onSignOut()
-      }
+      logout()
+      onSignOut?.()
       onClose()
+      router.push('/')
     } catch (error) {
       console.error('Sign out error:', error)
     } finally {
@@ -141,6 +198,66 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
       default:
         console.log('QR action:', action)
     }
+  }
+
+  const startCopyFeedbackTimer = () => {
+    if (copyFeedbackTimeout.current) {
+      clearTimeout(copyFeedbackTimeout.current)
+    }
+
+    copyFeedbackTimeout.current = setTimeout(() => {
+      setCopyFeedback(null)
+      copyFeedbackTimeout.current = null
+    }, 2000)
+  }
+
+  const handleCopyInviteLink = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(inviteLink)
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = inviteLink
+        textArea.setAttribute('readonly', '')
+        textArea.style.position = 'absolute'
+        textArea.style.left = '-9999px'
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+      }
+
+      setCopyFeedback('copied')
+    } catch (error) {
+      console.error('Failed to copy invite link:', error)
+      setCopyFeedback('failed')
+    } finally {
+      startCopyFeedbackTimer()
+    }
+  }
+
+  const openShareWindow = (url: string) => {
+    if (typeof window === 'undefined') return
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleShareToWhatsApp = () => {
+    openShareWindow(`https://wa.me/?text=${encodeURIComponent(inviteMessage)}`)
+  }
+
+  const handleShareViaSMS = () => {
+    openShareWindow(`sms:?&body=${encodeURIComponent(inviteMessage)}`)
+  }
+
+  const handleShareViaEmail = () => {
+    if (typeof window === 'undefined') return
+    const subject = 'Join me on Linkup'
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(inviteMessage)}`
+  }
+
+  const handleShowInviteQRCode = () => {
+    setQRCodeMode('my-code')
+    setShowQRCode(true)
   }
 
   const getHeaderMenuItems = () => {
@@ -190,14 +307,14 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
       title: 'Avatar',
       subtitle: 'Create, edit, profile photo',
       icon: Camera,
-      action: () => console.log('Avatar settings')
+      action: () => setCurrentSection('avatar')
     },
     {
       id: 'chats',
       title: 'Chats',
       subtitle: 'Theme, wallpapers, chat history',
       icon: MessageSquare,
-      action: () => console.log('Chat settings')
+      action: () => setCurrentSection('chats')
     },
     {
       id: 'notifications',
@@ -218,7 +335,7 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
       title: 'App language',
       subtitle: 'English (device\'s language)',
       icon: Globe,
-      action: () => console.log('Language settings')
+      action: () => setCurrentSection('language')
     },
     {
       id: 'help',
@@ -230,9 +347,9 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
     {
       id: 'invite',
       title: 'Invite a friend',
-      subtitle: '',
+      subtitle: 'Share Linkup with friends',
       icon: Heart,
-      action: () => console.log('Invite friend')
+      action: () => setCurrentSection('invite')
     }
   ]
 
@@ -448,6 +565,92 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
     }
   ]
 
+  const avatarItems = [
+    {
+      id: 'create-avatar',
+      title: 'Create avatar',
+      subtitle: 'Design your own avatar',
+      icon: Camera,
+      action: () => console.log('Create avatar')
+    },
+    {
+      id: 'edit-avatar',
+      title: 'Edit avatar',
+      subtitle: 'Customize your current avatar',
+      icon: User,
+      action: () => console.log('Edit avatar')
+    },
+    {
+      id: 'profile-photo',
+      title: 'Profile photo',
+      subtitle: 'Upload or change profile picture',
+      icon: Camera,
+      action: () => console.log('Profile photo')
+    }
+  ]
+
+  const chatItems = [
+    {
+      id: 'theme',
+      title: 'Theme',
+      subtitle: 'Light, Dark, System default',
+      icon: Moon,
+      action: () => console.log('Theme')
+    },
+    {
+      id: 'wallpaper',
+      title: 'Wallpaper',
+      subtitle: 'Change chat background',
+      icon: Camera,
+      action: () => console.log('Wallpaper')
+    },
+    {
+      id: 'chat-history',
+      title: 'Chat history',
+      subtitle: 'Export, clear, backup',
+      icon: Archive,
+      action: () => console.log('Chat history')
+    },
+    {
+      id: 'font-size',
+      title: 'Font size',
+      subtitle: 'Small, Medium, Large',
+      icon: MessageSquare,
+      action: () => console.log('Font size')
+    }
+  ]
+
+  const languageItems = [
+    {
+      id: 'english',
+      title: 'English',
+      subtitle: '',
+      icon: Globe,
+      action: () => setSettings(prev => ({ ...prev, language: 'English' }))
+    },
+    {
+      id: 'hindi',
+      title: 'हिन्दी',
+      subtitle: 'Hindi',
+      icon: Globe,
+      action: () => setSettings(prev => ({ ...prev, language: 'Hindi' }))
+    },
+    {
+      id: 'spanish',
+      title: 'Español',
+      subtitle: 'Spanish',
+      icon: Globe,
+      action: () => setSettings(prev => ({ ...prev, language: 'Spanish' }))
+    },
+    {
+      id: 'french',
+      title: 'Français',
+      subtitle: 'French',
+      icon: Globe,
+      action: () => setSettings(prev => ({ ...prev, language: 'French' }))
+    }
+  ]
+
   const helpItems = [
     {
       id: 'help-centre',
@@ -479,66 +682,109 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
     }
   ]
 
+  const inviteItems = [
+    {
+      id: 'copy-link',
+      title: 'Copy invite link',
+      subtitle: copyFeedback === 'copied' ? 'Link copied!' : copyFeedback === 'failed' ? 'Failed to copy' : inviteLink,
+      icon: Share,
+      action: handleCopyInviteLink
+    },
+    {
+      id: 'share-whatsapp',
+      title: 'Share via WhatsApp',
+      subtitle: 'Invite friends on WhatsApp',
+      icon: MessageSquare,
+      action: handleShareToWhatsApp
+    },
+    {
+      id: 'share-sms',
+      title: 'Share via SMS',
+      subtitle: 'Send invite via text message',
+      icon: MessageSquare,
+      action: handleShareViaSMS
+    },
+    {
+      id: 'share-email',
+      title: 'Share via Email',
+      subtitle: 'Send invite via email',
+      icon: Mail,
+      action: handleShareViaEmail
+    },
+    {
+      id: 'show-qr',
+      title: 'Show QR Code',
+      subtitle: 'Share your QR code',
+      icon: QrCode,
+      action: handleShowInviteQRCode
+    }
+  ]
+
   const renderSettingItem = (item: any) => (
-    <motion.button
+    <button
       key={item.id}
       onClick={item.action}
-      className={`w-full flex items-center justify-between p-4 hover:bg-indigo-500/10 transition-colors ${
-        item.danger ? 'text-red-400' : 'text-white'
-      } border-b border-white/5 last:border-b-0`}
-      whileTap={{ scale: 0.98 }}
+      className="flex w-full items-center justify-between rounded-2xl border border-subtle bg-surface-soft p-4 text-foreground shadow-soft hover:bg-surface-strong"
     >
       <div className="flex items-center space-x-4">
-        <div className={`p-2 rounded-lg ${item.danger ? 'bg-red-500/20' : 'bg-indigo-500/20'}`}>
-          <item.icon size={18} className={item.danger ? 'text-red-400' : 'text-indigo-300'} />
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
+            item.danger
+              ? 'border-[var(--danger)] bg-[rgba(220,38,38,0.15)] text-[var(--danger)]'
+              : 'border-subtle bg-surface text-[var(--accent)]'
+          }`}
+        >
+          <item.icon size={18} className={item.danger ? 'text-[var(--danger)]' : 'text-[var(--accent)]'} />
         </div>
         <div className="text-left">
-          <p className={`font-medium ${item.danger ? 'text-red-400' : 'text-white'}`}>
+          <p className={`font-medium ${item.danger ? 'text-[var(--danger)]' : 'text-foreground'}`}>
             {item.title}
           </p>
-          {item.subtitle && (
-            <p className="text-sm text-white/60 mt-0.5">{item.subtitle}</p>
-          )}
+          {item.subtitle && <p className="mt-0.5 text-sm text-muted">{item.subtitle}</p>}
         </div>
       </div>
       {item.toggle !== undefined ? (
-        <div className={`w-12 h-6 rounded-full transition-colors ${
-          item.toggle ? 'bg-indigo-500' : 'bg-white/20'
-        }`}>
-          <div className={`w-5 h-5 rounded-full bg-white transition-transform duration-200 mt-0.5 ${
-            item.toggle ? 'translate-x-6' : 'translate-x-0.5'
-          }`} />
+        <div
+          className={`flex h-6 w-12 items-center rounded-full border transition-colors ${
+            item.toggle ? 'border-transparent bg-[var(--accent)]' : 'border-subtle bg-surface'
+          }`}
+        >
+          <div
+            className={`h-5 w-5 rounded-full bg-surface shadow-soft transition-transform duration-200 ${
+              item.toggle ? 'translate-x-6' : 'translate-x-0.5'
+            }`}
+          />
         </div>
       ) : (
-        <ChevronRight size={16} className="text-indigo-300/60" />
+        <ChevronRight size={16} className="text-muted" />
       )}
-    </motion.button>
+    </button>
   )
 
   const renderQRCodeSection = () => (
-    <div className="flex-1 flex flex-col items-center justify-center p-8">
+    <div className="flex flex-1 flex-col items-center justify-center p-8">
       {qrCodeMode === 'my-code' ? (
         <div className="text-center">
-          <div className="w-64 h-64 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-2xl">
-            <div className="w-56 h-56 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <QrCode size={200} className="text-white" />
+          <div className="mb-6 flex h-64 w-64 items-center justify-center rounded-2xl border border-subtle bg-surface shadow-deep">
+            <div className="glass-card flex h-56 w-56 items-center justify-center rounded-xl">
+              <QrCode size={200} className="text-[var(--accent-strong)]" />
             </div>
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">My QR Code</h3>
-          <p className="text-indigo-200/80 text-center max-w-xs">
+          <h3 className="mb-2 text-xl font-semibold text-foreground">My QR Code</h3>
+          <p className="max-w-xs text-center text-muted">
             Show this code to others to add you as a contact or share your profile
           </p>
         </div>
       ) : (
         <div className="text-center">
-          <div className="w-64 h-64 border-2 border-dashed border-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+          <div className="mb-6 flex h-64 w-64 items-center justify-center rounded-2xl border-2 border-dashed border-[var(--accent)]/50">
             <div className="text-center">
-              <Scan size={80} className="text-indigo-400 mx-auto mb-4" />
-              <p className="text-indigo-200">Position QR code within frame</p>
+              <Scan size={80} className="mx-auto mb-4 text-[var(--accent)]" />
+              <p className="text-muted">Position QR code within frame</p>
             </div>
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Scan QR Code</h3>
-          <p className="text-indigo-200/80 text-center max-w-xs">
+          <h3 className="mb-2 text-xl font-semibold text-foreground">Scan QR Code</h3>
+          <p className="max-w-xs text-center text-muted">
             Scan a QR code to add contact or join a group
           </p>
         </div>
@@ -573,8 +819,8 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
             <div className="py-2">
               {privacyItems.map(renderSettingItem)}
             </div>
-            <div className="p-4 text-center text-indigo-200/70 text-sm border-t border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
-              Changes to your privacy settings won't affect messages you've already sent.
+            <div className="border-t border-subtle bg-surface-soft p-4 text-center text-sm text-muted">
+              Changes to your privacy settings will not affect messages you have already sent.
             </div>
           </div>
         )
@@ -597,15 +843,62 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
           </div>
         )
 
+      case 'avatar':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {avatarItems.map(renderSettingItem)}
+            </div>
+          </div>
+        )
+
+      case 'chats':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {chatItems.map(renderSettingItem)}
+            </div>
+          </div>
+        )
+
+      case 'language':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {languageItems.map(renderSettingItem)}
+            </div>
+          </div>
+        )
+
       case 'help':
         return (
           <div className="flex-1 overflow-y-auto">
             <div className="py-2">
               {helpItems.map(renderSettingItem)}
             </div>
-            <div className="p-4 text-center text-indigo-200/70 text-sm border-t border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
+            <div className="border-t border-subtle bg-surface-soft p-4 text-center text-sm text-muted">
               Linkup v2.25.9.11{'\n'}
               Made with ❤️ by Linkup Team
+            </div>
+          </div>
+        )
+
+      case 'invite':
+        return (
+          <div className="flex-1 overflow-y-auto">
+            <div className="py-2">
+              {inviteItems.map(renderSettingItem)}
+            </div>
+            <div className="mt-4 rounded-2xl border border-subtle bg-surface-soft p-6 text-center">
+              <Heart className="mx-auto mb-3 text-[var(--accent)]" size={40} />
+              <h3 className="mb-2 text-lg font-semibold text-foreground">Invite Friends to Linkup</h3>
+              <p className="mb-4 text-sm text-muted">
+                Share Linkup with your friends and family. The more people join, the better the experience!
+              </p>
+              <div className="rounded-xl bg-surface p-3 text-left">
+                <p className="text-xs font-medium text-muted mb-1">Your invite message:</p>
+                <p className="text-sm text-foreground break-words">{inviteMessage}</p>
+              </div>
             </div>
           </div>
         )
@@ -616,66 +909,93 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
   }
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+      isOpen && (
         <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50"
+          {/* Backdrop - only on mobile */}
+          <div
+            className="fixed inset-0 z-40 bg-[rgba(15,23,42,0.65)] backdrop-blur-sm md:hidden"
+            onClick={() => !showQRCode && currentSection === 'main' && onClose()}
+          />
+
+          {/* Desktop backdrop - only for area to the right of navigation */}
+          <div
+            className={`hidden md:block fixed top-0 bottom-0 right-0 z-40 bg-[rgba(15,23,42,0.4)] transition-all duration-300 ${
+              isDesktop ? (isSidebarExpanded ? 'left-64' : 'left-16') : 'left-0'
+            }`}
             onClick={() => !showQRCode && currentSection === 'main' && onClose()}
           />
 
           {/* Settings Modal */}
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed inset-0 z-50 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 flex flex-col shadow-2xl"
+          <div
+            className={`fixed inset-0 z-50 flex bg-surface shadow-deep md:flex-row md:inset-auto md:right-0 md:top-0 md:bottom-0 transition-all duration-300 ${
+              isDesktop ? (isSidebarExpanded ? 'md:left-64' : 'md:left-16') : ''
+            }`}
           >
-            {/* Header */}
-            <Header 
-              tabTitle={
-                showQRCode ? (qrCodeMode === 'my-code' ? 'My Code' : 'Scan Code') :
-                currentSection === 'main' ? 'Settings' :
-                currentSection === 'account' ? 'Account' :
-                currentSection === 'privacy' ? 'Privacy' :
-                currentSection === 'notifications' ? 'Notifications' :
-                currentSection === 'storage' ? 'Storage and data' :
-                currentSection === 'help' ? 'Help' : 'Settings'
-              }
-              showBackButton={true}
-              onBackClick={goBack}
-              menuItems={getHeaderMenuItems()}
-            />
+            {/* Left Sidebar - Settings List (Desktop) */}
+            <div className={`${
+              currentSection === 'main' ? 'flex' : 'hidden md:flex'
+            } w-full md:w-80 lg:w-96 flex-col border-r border-subtle`}>
+              <Header 
+                tabTitle="Settings"
+                showBackButton={true}
+                onBackClick={onClose}
+                menuItems={getHeaderMenuItems()}
+              />
+              <div className="flex-1 overflow-y-auto p-4">
+                {mainSettingsItems.map(renderSettingItem)}
+              </div>
+            </div>
 
-            {/* Content */}
-            {showQRCode ? renderQRCodeSection() : renderSection()}
+            {/* Right Panel - Settings Details */}
+            <div className={`${
+              currentSection === 'main' ? 'hidden md:flex' : 'flex'
+            } flex-1 flex-col`}>
+              {currentSection !== 'main' && (
+                <Header 
+                  tabTitle={
+                    showQRCode ? (qrCodeMode === 'my-code' ? 'My Code' : 'Scan Code') :
+                    currentSection === 'account' ? 'Account' :
+                    currentSection === 'privacy' ? 'Privacy' :
+                    currentSection === 'notifications' ? 'Notifications' :
+                    currentSection === 'storage' ? 'Storage and data' :
+                    currentSection === 'avatar' ? 'Avatar' :
+                    currentSection === 'chats' ? 'Chats' :
+                    currentSection === 'language' ? 'App language' :
+                    currentSection === 'help' ? 'Help' : 'Settings'
+                  }
+                  showBackButton={true}
+                  onBackClick={goBack}
+                  menuItems={[]}
+                />
+              )}
+              <div className="flex-1 overflow-y-auto p-4">
+                {showQRCode ? renderQRCodeSection() : (
+                  currentSection !== 'main' ? renderSection() : (
+                    <div className="flex h-full items-center justify-center">
+                      <div className="text-center text-muted">
+                        <Settings size={64} className="mx-auto mb-4 opacity-50" />
+                        <p>Select a setting to view details</p>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
 
             {/* Delete Account Confirmation */}
-            <AnimatePresence>
               {showDeleteConfirm && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/80 flex items-center justify-center z-60 p-4"
+                <div
+                  className="fixed inset-0 z-60 flex items-center justify-center bg-[rgba(8,15,30,0.75)] p-4"
                 >
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 rounded-2xl p-6 w-full max-w-md border border-indigo-500/30 shadow-2xl"
+                  <div
+                    className="glass-effect w-full max-w-md rounded-2xl border border-subtle bg-surface p-6 shadow-deep"
                   >
-                    <div className="text-center mb-6">
-                      <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Trash2 size={32} className="text-red-400" />
+                    <div className="mb-6 text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[var(--danger)] bg-[rgba(220,38,38,0.12)]">
+                        <Trash2 size={32} className="text-[var(--danger)]" />
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">Delete Account</h3>
-                      <p className="text-indigo-200/80 leading-relaxed">
+                      <h3 className="mb-2 text-xl font-bold text-foreground">Delete Account</h3>
+                      <p className="leading-relaxed text-muted">
                         Are you sure you want to delete your account? This action cannot be undone.
                         All your messages, media, and data will be permanently deleted.
                       </p>
@@ -683,24 +1003,22 @@ export default function SettingsModal({ isOpen, onClose, onSignOut, initialSecti
                     <div className="flex space-x-3">
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="flex-1 py-3 rounded-xl bg-indigo-500/20 text-white font-medium hover:bg-indigo-500/30 transition-colors border border-indigo-500/30"
+                        className="flex-1 rounded-xl border border-subtle bg-surface-soft py-3 font-medium text-foreground transition-colors hover:bg-surface-strong"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleDeleteAccount}
-                        className="flex-1 py-3 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors shadow-lg"
+                        className="flex-1 rounded-xl border border-[var(--danger)] bg-[rgba(220,38,38,0.14)] py-3 font-medium text-[var(--danger)] shadow-soft transition-colors hover:bg-[rgba(220,38,38,0.2)]"
                       >
                         Delete Account
                       </button>
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               )}
-            </AnimatePresence>
-          </motion.div>
+          </div>
         </>
-      )}
-    </AnimatePresence>
+      )
   )
 }

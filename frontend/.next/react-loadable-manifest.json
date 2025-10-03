@@ -1,1 +1,21 @@
-{}
+{
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_app": {
+    "id": 5139,
+    "files": [
+      "static/chunks/139.7a5a8e93a21948c1.js"
+    ]
+  },
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_error": {
+    "id": 1646,
+    "files": [
+      "static/chunks/646.f342b7cffc01feb0.js"
+    ]
+  },
+  "components\\features\\ChatWindow.tsx -> emoji-picker-react": {
+    "id": 6407,
+    "files": [
+      "static/chunks/fcfb803e.9aac92a44ce1daa4.js",
+      "static/chunks/831.90d4b87b9e0ac802.js"
+    ]
+  }
+}

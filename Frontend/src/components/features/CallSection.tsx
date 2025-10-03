@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Phone, Video, PhoneCall, Clock, PhoneOff, Search, MoreVertical, UserPlus, Settings } from 'lucide-react'
+import Image from 'next/image'
+import { Phone, Video, PhoneCall, PhoneOff, UserPlus, Settings } from 'lucide-react'
 import Header from '@/components/layout/Header'
 import { ContextMenuItem } from '@/components/ui/ContextMenu'
 
@@ -118,23 +119,23 @@ export default function CallSection() {
 
   const getCallIcon = (type: string, callType: string) => {
     if (type === 'missed') {
-      return <PhoneOff className="w-4 h-4 text-red-400" />
+      return <PhoneOff className="h-4 w-4 text-[color:var(--danger)]" />
     }
-    return callType === 'video' ? 
-      <Video className="w-4 h-4 text-green-400" /> : 
-      <Phone className="w-4 h-4 text-green-400" />
+    return callType === 'video'
+      ? <Video className="h-4 w-4 text-[color:var(--success)]" />
+      : <Phone className="h-4 w-4 text-[color:var(--success)]" />
   }
 
   const getCallTypeColor = (type: string) => {
     switch (type) {
       case 'missed':
-        return 'text-red-400'
+        return 'text-[color:var(--danger)]'
       case 'incoming':
-        return 'text-green-400'
+        return 'text-[color:var(--success)]'
       case 'outgoing':
-        return 'text-blue-400'
+        return 'text-[color:var(--accent-strong)]'
       default:
-        return 'text-white'
+        return 'text-muted'
     }
   }
 
@@ -147,7 +148,7 @@ export default function CallSection() {
   )
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="base-gradient flex h-full flex-col">
       {/* Header */}
       <Header 
         tabTitle="Calls"
@@ -160,8 +161,8 @@ export default function CallSection() {
       />
 
       {/* Tab Navigation */}
-      <div className="px-4 py-3 border-b border-white/20">
-        <div className="flex bg-white/10 rounded-lg p-1">
+      <div className="border-b border-subtle px-4 py-3">
+        <div className="flex rounded-lg border border-transparent bg-surface-soft p-1">
           {[
             { id: 'recent', label: 'Recent' },
             { id: 'contacts', label: 'Contacts' }
@@ -169,10 +170,10 @@ export default function CallSection() {
             <motion.button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-blue-500 text-white shadow-lg'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                  ? 'border border-[color:var(--accent)] bg-surface text-foreground shadow-soft'
+                  : 'text-muted hover:bg-surface-strong hover:text-foreground'
               }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -196,9 +197,9 @@ export default function CallSection() {
               className="p-4"
             >
               {filteredCallHistory.length === 0 ? (
-                <div className="text-center py-12">
-                  <PhoneCall className="w-16 h-16 text-white/30 mx-auto mb-4" />
-                  <p className="text-white/60">No recent calls</p>
+                <div className="py-12 text-center">
+                  <PhoneCall className="mx-auto mb-4 h-16 w-16 text-muted" />
+                  <p className="text-muted">No recent calls</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -207,31 +208,33 @@ export default function CallSection() {
                       key={call.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="glass-card p-4 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                      className="glass-card cursor-pointer rounded-xl p-4 transition-colors hover:bg-surface-strong"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <img
+                            <Image
                               src={call.avatar}
                               alt={call.name}
-                              className="w-12 h-12 rounded-full object-cover"
+                              width={48}
+                              height={48}
+                              className="h-12 w-12 rounded-full object-cover"
                             />
-                            <div className="absolute -bottom-1 -right-1 p-1 bg-slate-800 rounded-full">
+                            <div className="absolute -bottom-1 -right-1 rounded-full border border-subtle bg-surface-strong p-1">
                               {getCallIcon(call.type, call.callType)}
                             </div>
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-white font-medium">{call.name}</h3>
-                            <div className="flex items-center gap-2 text-sm">
+                            <h3 className="font-medium text-foreground">{call.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted">
                               <span className={getCallTypeColor(call.type)}>
                                 {call.type === 'incoming' ? '↓' : call.type === 'outgoing' ? '↑' : '✕'}
                               </span>
-                              <span className="text-white/60">{call.timestamp}</span>
+                              <span>{call.timestamp}</span>
                               {call.duration && (
                                 <>
-                                  <span className="text-white/30">•</span>
-                                  <span className="text-white/60">{call.duration}</span>
+                                  <span>•</span>
+                                  <span>{call.duration}</span>
                                 </>
                               )}
                             </div>
@@ -241,16 +244,16 @@ export default function CallSection() {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-full bg-green-500 hover:bg-green-600 transition-colors"
+                            className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--success)] transition-colors hover:bg-surface-strong"
                           >
-                            <Phone className="w-4 h-4 text-white" />
+                            <Phone className="h-4 w-4" />
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"
+                            className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--accent)] transition-colors hover:bg-surface-strong"
                           >
-                            <Video className="w-4 h-4 text-white" />
+                            <Video className="h-4 w-4" />
                           </motion.button>
                         </div>
                       </div>
@@ -269,9 +272,9 @@ export default function CallSection() {
               className="p-4"
             >
               {filteredContacts.length === 0 ? (
-                <div className="text-center py-12">
-                  <UserPlus className="w-16 h-16 text-white/30 mx-auto mb-4" />
-                  <p className="text-white/60">No contacts found</p>
+                <div className="py-12 text-center">
+                  <UserPlus className="mx-auto mb-4 h-16 w-16 text-muted" />
+                  <p className="text-muted">No contacts found</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -280,24 +283,31 @@ export default function CallSection() {
                       key={contact.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="glass-card p-4 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                      className="glass-card cursor-pointer rounded-xl p-4 transition-colors hover:bg-surface-strong"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <img
+                            <Image
                               src={contact.avatar}
                               alt={contact.name}
-                              className="w-12 h-12 rounded-full object-cover"
+                              width={48}
+                              height={48}
+                              className="h-12 w-12 rounded-full object-cover"
                             />
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-800 ${
-                              contact.status === 'online' ? 'bg-green-400' :
-                              contact.status === 'busy' ? 'bg-red-400' : 'bg-gray-400'
-                            }`} />
+                            <div
+                              className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-[color:var(--surface)] ${
+                                contact.status === 'online'
+                                  ? 'bg-[color:var(--success)]'
+                                  : contact.status === 'busy'
+                                    ? 'bg-[color:var(--danger)]'
+                                    : 'bg-[color:rgba(148,163,184,0.6)]'
+                              }`}
+                            />
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-white font-medium">{contact.name}</h3>
-                            <p className="text-white/60 text-sm">
+                            <h3 className="font-medium text-foreground">{contact.name}</h3>
+                            <p className="text-sm text-muted">
                               {contact.status === 'online' ? 'Online' :
                                contact.status === 'busy' ? 'Busy' :
                                contact.lastSeen || 'Offline'}
@@ -308,16 +318,16 @@ export default function CallSection() {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-full bg-green-500 hover:bg-green-600 transition-colors"
+                            className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--success)] transition-colors hover:bg-surface-strong"
                           >
-                            <Phone className="w-4 h-4 text-white" />
+                            <Phone className="h-4 w-4" />
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"
+                            className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--accent)] transition-colors hover:bg-surface-strong"
                           >
-                            <Video className="w-4 h-4 text-white" />
+                            <Video className="h-4 w-4" />
                           </motion.button>
                         </div>
                       </div>
