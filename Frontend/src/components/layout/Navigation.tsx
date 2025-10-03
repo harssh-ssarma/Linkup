@@ -81,7 +81,7 @@ export default function Navigation() {
                   aria-label={tab.label}
                   className={`group relative flex items-center overflow-hidden rounded-2xl border border-transparent transition-all focus:outline-none focus:ring-0 focus:border-0 ${
                     isSidebarExpanded ? 'w-full justify-start px-4 py-3' : 'mx-auto h-12 w-12 justify-center'
-                  } ${isActive ? 'bg-[var(--accent-subtle)] text-[var(--accent-strong)] shadow-soft' : 'text-muted hover:bg-surface-strong/80 hover:text-foreground'}`}
+                  } ${isActive ? 'bg-[var(--accent-subtle)] text-[var(--accent-strong)] shadow-soft' : 'text-muted'}`}
                   aria-current={isActive ? 'page' : undefined}
                   whileTap={{ scale: 0.96 }}
                   whileHover={isSidebarExpanded ? { scale: 1.02 } : undefined}
@@ -97,8 +97,10 @@ export default function Navigation() {
                     />
                   )}
 
-                  <div className="relative flex items-center justify-center">
-                    <Icon size={20} className="transition-colors" />
+                  <div className={`relative flex items-center justify-center rounded-xl p-2 ${
+                    isActive ? '' : 'hover:bg-surface-strong'
+                  }`}>
+                    <Icon size={20} />
                     {tab.badge && (
                       <div className="absolute -top-2 -right-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-xs font-semibold text-inverse shadow-soft">
                         {tab.badge > 99 ? '99+' : tab.badge}
@@ -125,22 +127,6 @@ export default function Navigation() {
         </div>
 
         <div className="mt-auto space-y-3 px-3 pb-6">
-          <Link href="/create" className="block">
-            <motion.div
-              whileTap={{ scale: 0.95 }}
-              whileHover={isSidebarExpanded ? { scale: 1.02 } : undefined}
-              className={`group flex items-center overflow-hidden rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent-subtle)] text-[var(--accent-strong)] shadow-soft transition-all ${
-                isSidebarExpanded ? 'justify-between px-4 py-3' : 'mx-auto h-12 w-12 justify-center'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Plus size={18} />
-                {isSidebarExpanded && <span className="text-sm font-semibold">New Chat</span>}
-              </div>
-              {isSidebarExpanded && <span className="text-xs font-medium text-[var(--accent)]/80">Ctrl+N</span>}
-              <span className="sr-only">Start a new chat</span>
-            </motion.div>
-          </Link>
 
           {/* <motion.button
             type="button"
