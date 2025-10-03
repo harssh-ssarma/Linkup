@@ -128,7 +128,7 @@ const CREATE_VARIANTS: Array<{
 
 const STORY_TRANSITION = { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
 
-export default function FeedCreateSection() {
+export default function FeedSection() {
   const [activeFilter, setActiveFilter] = useState<FeedFilter>('all')
   const [stories] = useState<Story[]>(() => generateMockStories())
   const [posts, setPosts] = useState<Post[]>(() => generateMockPosts('all', 1, 6))
