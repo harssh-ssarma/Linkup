@@ -158,17 +158,7 @@ export default function ChatWindow({ chat, onBack }: ChatWindowProps) {
   }
 
   if (!chat) {
-    return (
-      <div className="base-gradient flex flex-1 items-center justify-center">
-        <div className="glass-card mx-4 max-w-sm rounded-2xl p-6 text-center sm:p-8">
-          <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border border-subtle bg-surface-soft sm:mb-6 sm:h-32 sm:w-32">
-            <Bot size={32} className="text-muted sm:h-12 sm:w-12" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground sm:text-xl">Welcome to Linkup</h3>
-          <p className="mt-2 text-sm text-muted sm:text-base">Select a chat to start messaging</p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   // Sample contact data

@@ -62,7 +62,8 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   const tabTitles = {
     personal: 'Chats',
     groups: 'Groups', 
-    channels: 'Channels'
+    channels: 'Channels',
+    archive: 'Archive'
   }
 
   // Mock data based on chat type
@@ -145,7 +146,8 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
   const chatTabs = [
     { id: 'personal', label: 'Personal', icon: Phone },
     { id: 'groups', label: 'Groups', icon: Users },
-    { id: 'archive', label: 'Archive', icon: Radio },
+    { id: 'channels', label: 'Channels', icon: Radio },
+    { id: 'archive', label: 'Archive', icon: Radio }
   ]
 
   return (
@@ -154,8 +156,8 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
         
         {/* Left Pane - Chat List */}
         <div className={`${
-          activeChat ? 'hidden md:flex' : 'flex'
-        } w-full md:w-80 lg:w-96 flex-col border-r border-subtle`}>
+          activeChat ? 'hidden' : 'flex'
+        } w-full md:w-80 lg:w-96 flex-col border-r border-subtle md:flex`}>
           
           {/* Header */}
           <Header 
@@ -217,7 +219,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
         </div>
 
         {/* Right Pane - Chat Windows */}
-        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} ${activeChat ? 'fixed inset-0 z-50 md:relative md:z-auto' : ''} flex-1`}>
+        <div className={`flex-1 ${activeChat ? 'flex fixed inset-0 z-50 md:relative md:z-auto' : 'hidden md:flex'}`}>
           {activeChat && typeof window !== 'undefined' && window.innerWidth < 768 ? (
             <ChatWindow 
               chat={chats.find(chat => chat.id === activeChat)} 

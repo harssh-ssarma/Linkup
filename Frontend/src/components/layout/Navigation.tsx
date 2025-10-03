@@ -27,46 +27,30 @@ export default function Navigation() {
 
   return (
     <>
-      <motion.nav
+      <nav
         role="navigation"
         aria-label="Primary navigation"
         className="fixed left-0 top-0 bottom-0 z-40 hidden flex-col overflow-hidden nav-premium md:flex"
-        initial={false}
-        animate={{ width: isSidebarExpanded ? 256 : 64 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        style={{ width: isSidebarExpanded ? '256px' : '64px' }}
       >
         <div className={`flex items-center px-4 py-4 ${isSidebarExpanded ? 'justify-between' : 'justify-center'}`}>
-          <motion.div
-            className="flex items-center space-x-3 overflow-hidden"
-            initial={false}
-            animate={{ opacity: isSidebarExpanded ? 1 : 0, x: isSidebarExpanded ? 0 : -20, width: isSidebarExpanded ? 'auto' : 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          >
+          <div className="flex items-center space-x-3 overflow-hidden" style={{ opacity: isSidebarExpanded ? 1 : 0, width: isSidebarExpanded ? 'auto' : 0 }}>
             <div className="relative h-9 w-9 flex-shrink-0">
               <Image src="/linkup.png" alt="Linkup logo" fill className="rounded-xl object-cover" />
             </div>
-            <motion.span
-              className="text-lg font-semibold text-secondary"
-              initial={false}
-              animate={{ opacity: isSidebarExpanded ? 1 : 0, scale: isSidebarExpanded ? 1 : 0.85 }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            >
-              Linkup
-            </motion.span>
-          </motion.div>
+            <span className="text-lg font-semibold text-secondary">Linkup</span>
+          </div>
 
-          <motion.button
+          <button
             type="button"
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-            className={`rounded-2xl border border-subtle bg-surface-soft text-muted transition-all duration-200 hover:text-foreground ${
+            className={`rounded-2xl border border-subtle bg-surface-soft text-muted ${
               isSidebarExpanded ? 'p-2' : 'fixed left-4 top-4 z-50 p-2'
             }`}
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.05 }}
             aria-label={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
             {isSidebarExpanded ? <X size={18} /> : <Menu size={18} />}
-          </motion.button>
+          </button>
         </div>
 
         <div className="flex-1 space-y-3 px-2 py-4">
@@ -76,51 +60,27 @@ export default function Navigation() {
 
             return (
               <Link key={tab.id} href={tab.href} className="block">
-                <motion.button
+                <button
                   type="button"
                   aria-label={tab.label}
-                  className={`group relative flex items-center overflow-hidden rounded-2xl border border-transparent transition-all focus:outline-none focus:ring-0 focus:border-0 ${
-                    isSidebarExpanded ? 'w-full justify-start px-4 py-3' : 'mx-auto h-12 w-12 justify-center'
+                  className={`group relative flex items-center overflow-hidden border border-transparent focus:outline-none focus:ring-0 focus:border-0 ${
+                    isSidebarExpanded ? 'w-full justify-start px-4 py-3 rounded-xl' : 'mx-auto h-12 w-12 justify-center rounded-xl'
                   } ${isActive ? 'bg-[var(--accent-subtle)] text-[var(--accent-strong)] shadow-soft' : 'text-muted'}`}
                   aria-current={isActive ? 'page' : undefined}
-                  whileTap={{ scale: 0.96 }}
-                  whileHover={isSidebarExpanded ? { scale: 1.02 } : undefined}
                 >
-                  {isActive && (
-                    <motion.span
-                      layoutId="sidebar-active-indicator"
-                      className={`absolute bg-[var(--accent)] shadow-soft ${
-                        isSidebarExpanded
-                          ? 'left-2 top-1/2 h-10 w-1.5 -translate-y-1/2 rounded-full'
-                          : 'bottom-1 left-1/2 h-1 w-6 -translate-x-1/2 rounded-full'
-                      }`}
-                    />
-                  )}
-
-                  <div className={`relative flex items-center justify-center rounded-xl p-2 ${
-                    isActive ? '' : 'hover:bg-surface-strong'
-                  }`}>
+                  <div className="relative flex items-center justify-center p-2">
                     <Icon size={20} />
                     {tab.badge && (
-                      <div className="absolute -top-2 -right-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-xs font-semibold text-inverse shadow-soft">
+                      <div className="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-xs font-semibold text-inverse shadow-soft">
                         {tab.badge > 99 ? '99+' : tab.badge}
                       </div>
                     )}
                   </div>
 
-                  <motion.span
-                    className="ml-3 overflow-hidden whitespace-nowrap font-medium"
-                    initial={false}
-                    animate={{ opacity: isSidebarExpanded ? 1 : 0, width: isSidebarExpanded ? 'auto' : 0, marginLeft: isSidebarExpanded ? 12 : 0 }}
-                    transition={{
-                      duration: 0.25,
-                      ease: [0.4, 0, 0.2, 1],
-                      opacity: { duration: isSidebarExpanded ? 0.3 : 0.1, delay: isSidebarExpanded ? 0.1 : 0 },
-                    }}
-                  >
-                    {tab.label}
-                  </motion.span>
-                </motion.button>
+                  {isSidebarExpanded && (
+                    <span className="ml-3 overflow-hidden whitespace-nowrap font-medium">{tab.label}</span>
+                  )}
+                </button>
               </Link>
             )
           })}
@@ -154,7 +114,7 @@ export default function Navigation() {
             )}
           </motion.button> */}
         </div>
-      </motion.nav>
+      </nav>
 
       {showMobileNavigation && (
         <nav
@@ -169,24 +129,17 @@ export default function Navigation() {
 
               return (
                 <Link key={tab.id} href={tab.href} className="flex-1">
-                  <motion.button
+                  <button
                     type="button"
-                    whileTap={{ scale: 0.94 }}
-                    className={`relative flex w-full flex-col items-center justify-center space-y-1 rounded-2xl py-2 transition-all focus:outline-none focus:ring-0 focus:border-0 ${
-                      isActive
-                        ? 'bg-[var(--accent-subtle)] text-[var(--accent-strong)] shadow-soft'
-                        : 'text-muted hover:bg-surface-strong/70 hover:text-foreground'
+                    className={`relative flex w-full flex-col items-center justify-center space-y-1 py-2 focus:outline-none focus:ring-0 focus:border-0 ${
+                      isActive ? 'text-[var(--accent-strong)]' : 'text-muted'
                     }`}
                     aria-current={isActive ? 'page' : undefined}
                     aria-label={tab.label}
                   >
-                    {isActive && (
-                      <motion.span
-                        layoutId="mobile-active-indicator"
-                        className="absolute inset-x-6 -top-1 h-1 rounded-full bg-[var(--accent)]"
-                      />
-                    )}
-                    <div className="relative">
+                    <div className={`relative rounded-xl p-2 ${
+                      isActive ? 'bg-[var(--accent-subtle)]' : ''
+                    }`}>
                       <Icon size={22} />
                       {tab.badge && (
                         <div className="absolute -top-2 -right-2 flex h-4 min-w-[1.15rem] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-inverse shadow-soft">
@@ -195,7 +148,7 @@ export default function Navigation() {
                       )}
                     </div>
                     <span className="text-xs font-medium text-muted">{tab.label}</span>
-                  </motion.button>
+                  </button>
                 </Link>
               )
             })}

@@ -51,6 +51,22 @@ const sampleChats: Chat[] = [
     messageStatus: 'delivered'
   },
   {
+    id: '5',
+    name: 'Archived Chat',
+    lastMessage: 'This chat has been archived',
+    timestamp: 'Yesterday',
+    unreadCount: 0,
+    avatar: 'https://ui-avatars.com/api/?name=Archived+Chat&background=64748b&color=fff',
+    isOnline: false,
+    isGroup: false,
+    isChannel: false,
+    isPinned: false,
+    isMuted: true,
+    isVerified: false,
+    messageType: 'text',
+    messageStatus: 'read'
+  },
+  {
     id: '2',
     name: 'Family Group',
     lastMessage: 'Mom: Don\'t forget dinner tonight!',
