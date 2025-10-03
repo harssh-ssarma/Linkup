@@ -133,7 +133,7 @@ export default function Header({
   }
 
   // Use new props or fallback to legacy props
-  const displayTitle = title || tabTitle || 'Linkup'
+  const displayTitle = title || tabTitle
   const displaySubtitle = subtitle || (chatCount > 0 ? `${chatCount} ${currentTab === 'personal' ? 'conversation' : currentTab?.slice(0, -1)}${chatCount !== 1 ? 's' : ''}` : undefined)
 
   // Default menu items if none provided

@@ -156,8 +156,8 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
         
         {/* Left Pane - Chat List */}
         <div className={`${
-          activeChat ? 'hidden' : 'flex'
-        } w-full md:w-80 lg:w-96 flex-col border-r border-subtle md:flex`}>
+          activeChat ? 'hidden md:flex' : 'flex'
+        } w-full md:w-80 lg:w-96 flex-col border-r border-subtle`}>
           
           {/* Header */}
           <Header 
@@ -219,7 +219,7 @@ export default function ChatSection({ activeChat: propActiveChat, onChatChange }
         </div>
 
         {/* Right Pane - Chat Windows */}
-        <div className={`flex-1 ${activeChat ? 'flex fixed inset-0 z-50 md:relative md:z-auto' : 'hidden md:flex'}`}>
+        <div className={`${activeChat ? 'flex' : 'hidden md:flex'} ${activeChat ? 'fixed inset-0 z-50 md:relative md:z-auto' : ''} flex-1`}>
           {activeChat && typeof window !== 'undefined' && window.innerWidth < 768 ? (
             <ChatWindow 
               chat={chats.find(chat => chat.id === activeChat)} 

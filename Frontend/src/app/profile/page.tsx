@@ -2,6 +2,7 @@
 
 import AuthCheck from '@/components/auth/AuthCheck'
 import ProfileSection from '@/components/features/ProfileSection'
+import LayoutContent from '../AppShell'
 import AppShell from '../AppShell'
 
 export default function ProfilePage() {
